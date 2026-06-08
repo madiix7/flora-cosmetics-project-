@@ -9,7 +9,7 @@ type CartState = {
 }
 
 type CartAction =
-  | { type: 'ADD_ITEM'; product: Product; size: string }
+  | { type: 'ADD_ITEM'; product: Product; size: string; quantity?: number }
   | { type: 'REMOVE_ITEM'; productId: string; size: string }
   | { type: 'UPDATE_QUANTITY'; productId: string; size: string; quantity: number }
   | { type: 'CLEAR_CART' }
@@ -22,6 +22,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case 'LOAD_FROM_STORAGE':
       return { ...state, items: action.items }
     case 'ADD_ITEM': {
+      const qty = action.quantity ?? 1
       const existing = state.items.find(
         (i) => i.product.id === action.product.id && i.size === action.size
       )
@@ -30,14 +31,14 @@ function cartReducer(state: CartState, action: CartAction): CartState {
           ...state,
           items: state.items.map((i) =>
             i.product.id === action.product.id && i.size === action.size
-              ? { ...i, quantity: i.quantity + 1 }
+              ? { ...i, quantity: i.quantity + qty }
               : i
           ),
         }
       }
       return {
         ...state,
-        items: [...state.items, { product: action.product, size: action.size, quantity: 1 }],
+        items: [...state.items, { product: action.product, size: action.size, quantity: qty }],
       }
     }
     case 'REMOVE_ITEM':
@@ -79,7 +80,7 @@ type CartContextValue = {
   items: CartItem[]
   isDrawerOpen: boolean
   totalItems: number
-  addItem: (product: Product, size: string) => void
+  addItem: (product: Product, size: string, quantity?: number) => void
   removeItem: (productId: string, size: string) => void
   updateQuantity: (productId: string, size: string, quantity: number) => void
   clearCart: () => void
@@ -97,7 +98,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (stored) {
       try {
         dispatch({ type: 'LOAD_FROM_STORAGE', items: JSON.parse(stored) })
-      } catch {}
+      } catch {
+        localStorage.removeItem('flora_cart')
+      }
     }
   }, [])
 
@@ -113,8 +116,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         items: state.items,
         isDrawerOpen: state.isDrawerOpen,
         totalItems,
-        addItem: (product, size) => {
-          dispatch({ type: 'ADD_ITEM', product, size })
+        addItem: (product, size, quantity = 1) => {
+          dispatch({ type: 'ADD_ITEM', product, size, quantity })
           dispatch({ type: 'OPEN_DRAWER' })
         },
         removeItem: (productId, size) => dispatch({ type: 'REMOVE_ITEM', productId, size }),

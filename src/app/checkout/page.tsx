@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
-import { calculateTotal, formatPrice, generateOrderId } from '@/lib/utils'
+import { calculateTotal, calculateDelivery, formatPrice, generateOrderId } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import type { Order } from '@/types'
 
@@ -31,6 +31,7 @@ export default function CheckoutPage() {
   const { items, clearCart } = useCart()
   const router = useRouter()
   const total = calculateTotal(items)
+  const delivery = calculateDelivery(total)
 
   const [form, setForm] = useState<FormData>({
     fullName: '',
@@ -50,6 +51,7 @@ export default function CheckoutPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (items.length === 0) return
     const errs = validate(form)
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
@@ -60,7 +62,7 @@ export default function CheckoutPage() {
       id: generateOrderId(),
       items,
       customer: form,
-      total: total >= 5000 ? total : total + 500,
+      total: total + delivery,
       createdAt: new Date().toISOString(),
     }
 
@@ -187,12 +189,12 @@ export default function CheckoutPage() {
           <div className="border-t border-sand pt-4 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-stone">Delivery</span>
-              <span>{total >= 5000 ? 'Free' : formatPrice(500)}</span>
+              <span>{delivery === 0 ? 'Free' : formatPrice(delivery)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-[10px] tracking-widest uppercase text-stone">Total</span>
               <span className="font-serif text-xl text-charcoal">
-                {formatPrice(total >= 5000 ? total : total + 500)}
+                {formatPrice(total + delivery)}
               </span>
             </div>
           </div>

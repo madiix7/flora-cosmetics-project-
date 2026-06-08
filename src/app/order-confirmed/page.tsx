@@ -11,7 +11,12 @@ export default function OrderConfirmedPage() {
 
   useEffect(() => {
     const stored = localStorage.getItem('flora_last_order')
-    if (stored) setOrder(JSON.parse(stored))
+    if (!stored) return
+    try {
+      setOrder(JSON.parse(stored))
+    } catch {
+      localStorage.removeItem('flora_last_order')
+    }
   }, [])
 
   return (

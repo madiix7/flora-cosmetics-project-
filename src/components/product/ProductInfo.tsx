@@ -15,7 +15,7 @@ export function ProductInfo({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1)
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) addItem(product, selectedSize)
+    addItem(product, selectedSize, quantity)
   }
 
   return (
@@ -66,6 +66,7 @@ export function ProductInfo({ product }: { product: Product }) {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
+            aria-label="Decrease quantity"
             className="w-8 h-8 border border-parchment text-stone hover:border-charcoal text-lg flex items-center justify-center"
           >
             −
@@ -73,6 +74,7 @@ export function ProductInfo({ product }: { product: Product }) {
           <span className="text-sm w-6 text-center">{quantity}</span>
           <button
             onClick={() => setQuantity(quantity + 1)}
+            aria-label="Increase quantity"
             className="w-8 h-8 border border-parchment text-stone hover:border-charcoal text-lg flex items-center justify-center"
           >
             +

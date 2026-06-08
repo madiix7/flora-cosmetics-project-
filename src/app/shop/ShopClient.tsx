@@ -13,9 +13,13 @@ type Filters = {
   sort: 'newest' | 'price-asc' | 'price-desc' | 'bestsellers'
 }
 
+const VALID_SCENTS: (ScentFamily | 'all')[] = ['all', 'floral', 'woody', 'oriental', 'fresh', 'citrus']
+
 export function ShopClient() {
   const searchParams = useSearchParams()
-  const initialScent = (searchParams.get('scent') as ScentFamily) || 'all'
+  const rawScent = searchParams.get('scent')
+  const initialScent: ScentFamily | 'all' =
+    rawScent && VALID_SCENTS.includes(rawScent as ScentFamily) ? (rawScent as ScentFamily) : 'all'
 
   const [filters, setFilters] = useState<Filters>({
     category: 'all',

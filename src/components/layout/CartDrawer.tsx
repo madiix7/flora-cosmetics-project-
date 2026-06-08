@@ -3,11 +3,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
-import { formatPrice, calculateTotal } from '@/lib/utils'
+import { formatPrice, calculateTotal, FREE_DELIVERY_THRESHOLD } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 
 export function CartDrawer() {
-  const { items, isDrawerOpen, closeDrawer, removeItem, updateQuantity } = useCart()
+  const { items, isDrawerOpen, closeDrawer, removeItem, updateQuantity, totalItems } = useCart()
   const total = calculateTotal(items)
 
   return (
@@ -26,9 +26,9 @@ export function CartDrawer() {
       >
         <div className="flex items-center justify-between px-8 py-6 border-b border-parchment">
           <p className="text-[10px] tracking-widest uppercase text-charcoal">
-            Your Cart ({items.length})
+            Your Cart ({totalItems})
           </p>
-          <button onClick={closeDrawer} className="text-stone hover:text-charcoal text-2xl leading-none">
+          <button onClick={closeDrawer} aria-label="Close cart" className="text-stone hover:text-charcoal text-2xl leading-none">
             ×
           </button>
         </div>
@@ -63,6 +63,7 @@ export function CartDrawer() {
                     <div className="flex items-center gap-3 mt-3">
                       <button
                         onClick={() => updateQuantity(item.product.id, item.size, item.quantity - 1)}
+                        aria-label="Decrease quantity"
                         className="w-6 h-6 border border-parchment text-stone hover:border-charcoal text-sm"
                       >
                         −
@@ -70,6 +71,7 @@ export function CartDrawer() {
                       <span className="text-xs w-4 text-center">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(item.product.id, item.size, item.quantity + 1)}
+                        aria-label="Increase quantity"
                         className="w-6 h-6 border border-parchment text-stone hover:border-charcoal text-sm"
                       >
                         +
@@ -92,7 +94,7 @@ export function CartDrawer() {
                 <span className="font-serif text-lg text-charcoal">{formatPrice(total)}</span>
               </div>
               <p className="text-[10px] text-stone tracking-wide">
-                Cash on delivery · Free shipping on orders over 5,000 DZD
+                Cash on delivery · Free shipping on orders over {FREE_DELIVERY_THRESHOLD.toLocaleString('fr-DZ')} DZD
               </p>
               <Link href="/checkout" onClick={closeDrawer}>
                 <Button className="w-full justify-center">Proceed to Checkout</Button>

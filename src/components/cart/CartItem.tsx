@@ -37,6 +37,7 @@ export function CartItem({ item }: { item: CartItemType }) {
           <div className="flex items-center border border-parchment">
             <button
               onClick={() => updateQuantity(item.product.id, item.size, item.quantity - 1)}
+              aria-label="Decrease quantity"
               className="w-8 h-8 text-stone hover:text-charcoal flex items-center justify-center"
             >
               −
@@ -44,6 +45,7 @@ export function CartItem({ item }: { item: CartItemType }) {
             <span className="w-8 text-center text-sm">{item.quantity}</span>
             <button
               onClick={() => updateQuantity(item.product.id, item.size, item.quantity + 1)}
+              aria-label="Increase quantity"
               className="w-8 h-8 text-stone hover:text-charcoal flex items-center justify-center"
             >
               +

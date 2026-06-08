@@ -1,20 +1,33 @@
+import type { CartItem, Product } from '@/types'
+
+export const FREE_DELIVERY_THRESHOLD = 5000
+export const DELIVERY_FEE = 500
+
 export function formatPrice(amount: number): string {
   return `${amount.toLocaleString('fr-DZ')} DZD`
 }
 
-export function calculateTotal(items: import('@/types').CartItem[]): number {
+export function calculateTotal(items: CartItem[]): number {
   return items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
 }
 
+export function calculateDelivery(subtotal: number): number {
+  return subtotal >= FREE_DELIVERY_THRESHOLD ? 0 : DELIVERY_FEE
+}
+
 export function generateOrderId(): string {
-  return `FL-${Date.now()}-${Math.floor(Math.random() * 1000)}`
+  const random =
+    typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID().replace(/-/g, '').slice(0, 8)
+      : Math.floor(Math.random() * 1_000_000).toString().padStart(6, '0')
+  return `FL-${Date.now()}-${random}`
 }
 
 export function getRelatedProducts(
-  products: import('@/types').Product[],
-  current: import('@/types').Product,
+  products: Product[],
+  current: Product,
   limit = 3
-): import('@/types').Product[] {
+): Product[] {
   return products
     .filter(
       (p) =>
