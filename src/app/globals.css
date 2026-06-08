@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ivory: #f8f5f0;
+  --color-parchment: #ede8e0;
+  --color-sand: #d4c9b8;
+  --color-warm-gold: #c5a87a;
+  --color-stone: #888882;
+  --color-charcoal: #1a1a1a;
+
+  --font-family-serif: var(--font-cormorant), Georgia, serif;
+  --font-family-sans: var(--font-dm-sans), system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-ivory text-charcoal font-sans;
+  }
+  h1, h2, h3, h4 {
+    @apply font-serif;
+  }
+}
+
+@layer utilities {
+  .tracking-luxury {
+    letter-spacing: 0.25em;
+  }
+}
