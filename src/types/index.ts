@@ -31,6 +31,8 @@ export type CartItem = {
   quantity: number
 }
 
+export type OrderStatus = 'pending' | 'confirmed' | 'delivered' | 'cancelled'
+
 export type Order = {
   id: string
   items: CartItem[]
@@ -42,5 +44,6 @@ export type Order = {
     notes: string
   }
   total: number
+  status: OrderStatus
   createdAt: string
 }

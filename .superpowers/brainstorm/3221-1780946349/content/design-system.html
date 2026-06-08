@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design System — Flora Cosmetics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f0ebe4; font-family: 'DM Sans', sans-serif; color: #1a1a1a; }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 48px 32px; }
+
+  h1 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 13px; letter-spacing: 6px; text-transform: uppercase; color: #888; margin-bottom: 48px; }
+
+  .section { margin-bottom: 52px; }
+  .section-label { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: #aaa; margin-bottom: 20px; }
+
+  /* COLOR SWATCHES */
+  .swatches { display: flex; gap: 12px; flex-wrap: wrap; }
+  .swatch { display: flex; flex-direction: column; gap: 8px; }
+  .swatch-box { width: 80px; height: 80px; border-radius: 4px; }
+  .swatch-name { font-size: 10px; color: #888; letter-spacing: 1px; }
+  .swatch-hex { font-size: 11px; color: #555; font-family: monospace; }
+
+  /* TYPOGRAPHY SHOWCASE */
+  .type-display { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 52px; letter-spacing: 2px; color: #1a1a1a; line-height: 1.1; margin-bottom: 8px; }
+  .type-display-label { font-size: 10px; letter-spacing: 3px; color: #aaa; text-transform: uppercase; margin-bottom: 24px; }
+  .type-sub { font-family: 'Cormorant Garamond', serif; font-weight: 400; font-size: 22px; letter-spacing: 1px; color: #444; margin-bottom: 6px; }
+  .type-body { font-family: 'DM Sans', sans-serif; font-weight: 300; font-size: 14px; color: #666; line-height: 1.7; max-width: 480px; margin-bottom: 16px; }
+  .type-label { font-family: 'DM Sans', sans-serif; font-weight: 400; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #888; }
+
+  /* MINI MOCKUP */
+  .mockup-wrap { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 24px rgba(0,0,0,0.06); }
+  .mockup-nav { background: #f8f5f0; padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #ede8e0; }
+  .mockup-nav .logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 4px; font-weight: 300; }
+  .mockup-nav .links { display: flex; gap: 24px; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #888; }
+  .mockup-body { display: grid; grid-template-columns: 1.5fr 1fr; grid-template-rows: auto auto; gap: 0; min-height: 300px; }
+  .hero-big { background: linear-gradient(135deg, #ddd5c8 0%, #ccc0af 100%); grid-row: span 2; display: flex; align-items: flex-end; padding: 28px; }
+  .hero-big-text { }
+  .hero-big-text .tag { font-size: 9px; letter-spacing: 4px; color: #888; text-transform: uppercase; margin-bottom: 8px; }
+  .hero-big-text .name { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; letter-spacing: 1px; color: #1a1a1a; }
+  .hero-small-top { background: #ede8e0; display: flex; align-items: flex-end; padding: 16px; min-height: 140px; }
+  .hero-small-bot { background: #e5ddd3; display: flex; align-items: flex-end; padding: 16px; min-height: 140px; border-top: 1px solid rgba(255,255,255,0.5); }
+  .small-text .tag { font-size: 8px; letter-spacing: 3px; color: #888; text-transform: uppercase; }
+  .small-text .name { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 300; color: #1a1a1a; margin-top: 2px; }
+
+  .btn { display: inline-block; margin-top: 20px; padding: 10px 28px; background: #1a1a1a; color: #f8f5f0; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; font-family: 'DM Sans', sans-serif; border-radius: 1px; }
+  .btn-outline { background: transparent; border: 1px solid #1a1a1a; color: #1a1a1a; margin-left: 12px; }
+
+  .divider { width: 40px; height: 1px; background: #c5a87a; margin: 12px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>Flora Cosmetics — Design System</h1>
+
+  <div class="section">
+    <div class="section-label">Color Palette</div>
+    <div class="swatches">
+      <div class="swatch">
+        <div class="swatch-box" style="background:#f8f5f0; border:1px solid #e8e0d5;"></div>
+        <div class="swatch-name">Ivory</div>
+        <div class="swatch-hex">#f8f5f0</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-box" style="background:#ede8e0;"></div>
+        <div class="swatch-name">Parchment</div>
+        <div class="swatch-hex">#ede8e0</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-box" style="background:#d4c9b8;"></div>
+        <div class="swatch-name">Sand</div>
+        <div class="swatch-hex">#d4c9b8</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-box" style="background:#c5a87a;"></div>
+        <div class="swatch-name">Warm Gold</div>
+        <div class="swatch-hex">#c5a87a</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-box" style="background:#888882;"></div>
+        <div class="swatch-name">Stone</div>
+        <div class="swatch-hex">#888882</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-box" style="background:#1a1a1a;"></div>
+        <div class="swatch-name">Charcoal</div>
+        <div class="swatch-hex">#1a1a1a</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Typography</div>
+    <div class="type-display">Flora Cosmetics</div>
+    <div class="type-display-label">Cormorant Garamond — Headlines &amp; Display</div>
+    <div class="type-sub">Oud Intense · Rose Sillage · Amber Noir</div>
+    <div class="divider"></div>
+    <div class="type-body">Each fragrance is a carefully composed narrative — an invisible signature that lingers long after you have gone. Discover our collection of artisanal perfumes.</div>
+    <div class="type-label">DM Sans — Body &amp; UI Text</div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Homepage Preview — Editorial Grid</div>
+    <div class="mockup-wrap">
+      <div class="mockup-nav">
+        <span class="logo">FLORA</span>
+        <div class="links">
+          <span>Shop</span><span>About</span><span>Contact</span>
+        </div>
+        <div style="font-size:10px;letter-spacing:2px;color:#888;">Cart (0)</div>
+      </div>
+      <div class="mockup-body">
+        <div class="hero-big">
+          <div class="hero-big-text">
+            <div class="tag">New Arrival</div>
+            <div class="name">Oud Intense</div>
+            <div class="divider"></div>
+            <span class="btn">Shop Now</span>
+          </div>
+        </div>
+        <div class="hero-small-top">
+          <div class="small-text">
+            <div class="tag">Bestseller</div>
+            <div class="name">Rose Sillage</div>
+          </div>
+        </div>
+        <div class="hero-small-bot">
+          <div class="small-text">
+            <div class="tag">Limited</div>
+            <div class="name">Amber Noir</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Buttons</div>
+    <span class="btn">Add to Cart</span>
+    <span class="btn btn-outline">Learn More</span>
+  </div>
+</div>
+</body>
+</html>

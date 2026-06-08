@@ -53,7 +53,7 @@ export default function CheckoutPage() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (items.length === 0) {
       router.push('/cart')
@@ -70,11 +70,16 @@ export default function CheckoutPage() {
       items,
       customer: form,
       total: total + delivery,
+      status: 'pending',
       createdAt: new Date().toISOString(),
     }
 
-    const existing: Order[] = JSON.parse(localStorage.getItem('flora_orders') || '[]')
-    localStorage.setItem('flora_orders', JSON.stringify([...existing, order]))
+    // Persist to server (admin can see it) + localStorage (confirmation page)
+    await fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(order),
+    })
     localStorage.setItem('flora_last_order', JSON.stringify(order))
 
     clearCart()

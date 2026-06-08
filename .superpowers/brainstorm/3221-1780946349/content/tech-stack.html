@@ -1,0 +1,30 @@
+<h2>Which tech stack?</h2>
+<p class="subtitle">This shapes how the project is built and deployed</p>
+
+<div class="options">
+
+  <div class="option" data-choice="nextjs" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Next.js + Tailwind CSS <span style="font-size:11px;background:#d4af37;color:#000;padding:2px 6px;border-radius:10px;margin-left:6px;">Recommended</span></h3>
+      <p>React-based, fast, SEO-friendly, easy to deploy on Vercel. Best choice for a modern e-commerce site. Supports server-side rendering and static pages.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="html-css" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Plain HTML / CSS / JavaScript</h3>
+      <p>No framework, no build tools. Simple to understand, deploy anywhere. E-commerce logic handled via a third-party widget (Snipcart, Shopify Buy Button).</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="react-vite" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>React + Vite + Tailwind</h3>
+      <p>Single-page app. Fast dev experience, component-driven. Good balance of modern tooling without the complexity of Next.js.</p>
+    </div>
+  </div>
+
+</div>

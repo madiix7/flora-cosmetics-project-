@@ -1,0 +1,385 @@
+[
+  {
+    "id": "1",
+    "slug": "oud-intense",
+    "name": "Oud Intense",
+    "price": 4500,
+    "images": [
+      "https://images.unsplash.com/photo-1541643600914-78b084683702?w=800",
+      "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=800"
+    ],
+    "category": "perfume",
+    "scentFamily": [
+      "woody",
+      "oriental"
+    ],
+    "sizes": [
+      "30ml",
+      "50ml",
+      "100ml"
+    ],
+    "shortDescription": "A deep, resinous oud anchored by smoky woods and amber.",
+    "description": "Oud Intense is an olfactory journey to the heart of the Middle East. Opening with a whisper of saffron, the fragrance settles into a rich oud accord layered with patchouli and vetiver, before resting on a warm amber and musk base. Long-lasting and deeply personal.",
+    "scentNotes": {
+      "top": [
+        "Saffron",
+        "Cardamom"
+      ],
+      "heart": [
+        "Oud",
+        "Patchouli",
+        "Rose"
+      ],
+      "base": [
+        "Amber",
+        "Vetiver",
+        "White Musk"
+      ]
+    },
+    "isFeatured": true,
+    "isNew": true,
+    "isBestseller": false,
+    "createdAt": "2026-01-01"
+  },
+  {
+    "id": "2",
+    "slug": "rose-sillage",
+    "name": "Rose Sillage",
+    "price": 3800,
+    "images": [
+      "https://images.unsplash.com/photo-1615634260167-c8cdede054de?w=800",
+      "https://images.unsplash.com/photo-1563170351-be82bc888aa4?w=800"
+    ],
+    "category": "perfume",
+    "scentFamily": [
+      "floral",
+      "fresh"
+    ],
+    "sizes": [
+      "30ml",
+      "50ml",
+      "100ml"
+    ],
+    "shortDescription": "A luminous rose with a trail that lingers in memory.",
+    "description": "Rose Sillage captures the essence of a rose garden at dawn — dewy, radiant, and alive. Turkish rose absolute meets white peony and litchi for an airy floral heart, underpinned by cedarwood and soft musk.",
+    "scentNotes": {
+      "top": [
+        "Litchi",
+        "Pink Pepper"
+      ],
+      "heart": [
+        "Turkish Rose",
+        "White Peony",
+        "Magnolia"
+      ],
+      "base": [
+        "Cedarwood",
+        "Musk",
+        "Sandalwood"
+      ]
+    },
+    "isFeatured": true,
+    "isNew": false,
+    "isBestseller": true,
+    "createdAt": "2025-09-01"
+  },
+  {
+    "id": "3",
+    "slug": "amber-noir",
+    "name": "Amber Noir",
+    "price": 4200,
+    "images": [
+      "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=800",
+      "https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=800"
+    ],
+    "category": "perfume",
+    "scentFamily": [
+      "oriental",
+      "woody"
+    ],
+    "sizes": [
+      "50ml",
+      "100ml"
+    ],
+    "shortDescription": "Warm amber and dark vanilla wrapped in smoky incense.",
+    "description": "Amber Noir is a seductive fragrance for the night. Incense and labdanum open dramatically, giving way to a heart of dark rose and benzoin, before a deep base of tonka bean, vanilla, and dark musk envelops the skin.",
+    "scentNotes": {
+      "top": [
+        "Incense",
+        "Bergamot"
+      ],
+      "heart": [
+        "Labdanum",
+        "Dark Rose",
+        "Benzoin"
+      ],
+      "base": [
+        "Tonka Bean",
+        "Vanilla",
+        "Dark Musk"
+      ]
+    },
+    "isFeatured": true,
+    "isNew": false,
+    "isBestseller": false,
+    "createdAt": "2025-06-01"
+  },
+  {
+    "id": "4",
+    "slug": "jasmine-lumiere",
+    "name": "Jasmine Lumière",
+    "price": 3500,
+    "images": [
+      "https://images.unsplash.com/photo-1598662957563-ee4965d4d72c?w=800",
+      "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=800"
+    ],
+    "category": "perfume",
+    "scentFamily": [
+      "floral",
+      "citrus"
+    ],
+    "sizes": [
+      "30ml",
+      "50ml",
+      "100ml"
+    ],
+    "shortDescription": "Sun-drenched jasmine brightened with citrus and neroli.",
+    "description": "Jasmine Lumière is the scent of golden afternoons. Sparkling bergamot and neroli introduce a radiant jasmine sambac heart, warmed gently by ylang-ylang and finished with a clean musk and white wood base.",
+    "scentNotes": {
+      "top": [
+        "Bergamot",
+        "Neroli",
+        "Lemon"
+      ],
+      "heart": [
+        "Jasmine Sambac",
+        "Ylang-Ylang",
+        "Orange Blossom"
+      ],
+      "base": [
+        "White Musk",
+        "White Wood",
+        "Ambrette"
+      ]
+    },
+    "isFeatured": false,
+    "isNew": true,
+    "isBestseller": false,
+    "createdAt": "2026-03-01"
+  },
+  {
+    "id": "5",
+    "slug": "velvet-body-lotion",
+    "name": "Velvet Body Lotion",
+    "price": 1800,
+    "images": [
+      "https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=800"
+    ],
+    "category": "body-care",
+    "scentFamily": [
+      "floral",
+      "fresh"
+    ],
+    "sizes": [
+      "200ml",
+      "400ml"
+    ],
+    "shortDescription": "Rich moisturising lotion infused with rose and shea.",
+    "description": "A luxuriously thick yet fast-absorbing body lotion. Shea butter and vitamin E nourish deeply while a delicate rose and jasmine fragrance lingers softly on the skin.",
+    "scentNotes": {
+      "top": [
+        "Rose",
+        "Jasmine"
+      ],
+      "heart": [
+        "Shea",
+        "Vanilla"
+      ],
+      "base": [
+        "Musk"
+      ]
+    },
+    "isFeatured": false,
+    "isNew": false,
+    "isBestseller": true,
+    "createdAt": "2025-04-01"
+  },
+  {
+    "id": "6",
+    "slug": "silk-shower-oil",
+    "name": "Silk Shower Oil",
+    "price": 2200,
+    "images": [
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800"
+    ],
+    "category": "body-care",
+    "scentFamily": [
+      "fresh",
+      "citrus"
+    ],
+    "sizes": [
+      "200ml"
+    ],
+    "shortDescription": "A silky shower oil that transforms to milk on skin.",
+    "description": "Crafted with sweet almond oil and argan oil, this shower oil transforms into a milky lather that cleanses while leaving skin deeply moisturised. Scented with bergamot and white tea.",
+    "scentNotes": {
+      "top": [
+        "Bergamot",
+        "Green Tea"
+      ],
+      "heart": [
+        "White Tea",
+        "Cucumber"
+      ],
+      "base": [
+        "Sandalwood",
+        "Musk"
+      ]
+    },
+    "isFeatured": false,
+    "isNew": false,
+    "isBestseller": false,
+    "createdAt": "2025-04-01"
+  },
+  {
+    "id": "7",
+    "slug": "cedarwood-vanilla-candle",
+    "name": "Cedarwood & Vanilla",
+    "price": 2800,
+    "images": [
+      "https://images.unsplash.com/photo-1602874801007-bd458bb1a972?w=800"
+    ],
+    "category": "candle",
+    "scentFamily": [
+      "woody",
+      "oriental"
+    ],
+    "sizes": [
+      "200g",
+      "350g"
+    ],
+    "shortDescription": "Warm cedarwood and sweet vanilla for cosy evenings.",
+    "description": "A hand-poured soy wax candle with a wooden wick. Cedarwood and sandalwood create a grounding base, while Madagascar vanilla adds warmth and sweetness. Burn time: 45–60 hours (200g).",
+    "scentNotes": {
+      "top": [
+        "Cedarwood",
+        "Cypress"
+      ],
+      "heart": [
+        "Sandalwood",
+        "Labdanum"
+      ],
+      "base": [
+        "Vanilla",
+        "Tonka Bean"
+      ]
+    },
+    "isFeatured": false,
+    "isNew": false,
+    "isBestseller": true,
+    "createdAt": "2025-10-01"
+  },
+  {
+    "id": "8",
+    "slug": "white-tea-iris-candle",
+    "name": "White Tea & Iris",
+    "price": 2800,
+    "images": [
+      "https://images.unsplash.com/photo-1612540139153-41a3d4b02f56?w=800"
+    ],
+    "category": "candle",
+    "scentFamily": [
+      "fresh",
+      "floral"
+    ],
+    "sizes": [
+      "200g",
+      "350g"
+    ],
+    "shortDescription": "Serene white tea and powdery iris for calm spaces.",
+    "description": "Light, clean, and effortlessly chic. This hand-poured candle combines white tea with a powdery iris and violet accord, finishing on a base of white musk and amberwood.",
+    "scentNotes": {
+      "top": [
+        "White Tea",
+        "Green Accord"
+      ],
+      "heart": [
+        "Iris",
+        "Violet",
+        "Peony"
+      ],
+      "base": [
+        "White Musk",
+        "Amberwood"
+      ]
+    },
+    "isFeatured": false,
+    "isNew": true,
+    "isBestseller": false,
+    "createdAt": "2026-02-01"
+  },
+  {
+    "id": "9",
+    "slug": "the-signature-set",
+    "name": "The Signature Set",
+    "price": 8500,
+    "images": [
+      "https://images.unsplash.com/photo-1619451683957-bfccd40ba70a?w=800"
+    ],
+    "category": "gift-set",
+    "scentFamily": [
+      "floral",
+      "woody",
+      "oriental"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "shortDescription": "Our three bestselling perfumes in a luxury gift box.",
+    "description": "The Signature Set brings together Rose Sillage, Amber Noir, and Oud Intense — three of our most celebrated fragrances — in a beautifully crafted gift box. The perfect introduction to the Flora Cosmetics universe.",
+    "scentNotes": {
+      "top": [
+        "Rose",
+        "Amber",
+        "Oud"
+      ],
+      "heart": [],
+      "base": []
+    },
+    "isFeatured": false,
+    "isNew": false,
+    "isBestseller": true,
+    "createdAt": "2025-11-01"
+  },
+  {
+    "id": "10",
+    "slug": "the-discovery-set",
+    "name": "The Discovery Set",
+    "price": 5500,
+    "images": [
+      "https://images.unsplash.com/photo-1547887538-047f814e0a27?w=800"
+    ],
+    "category": "gift-set",
+    "scentFamily": [
+      "floral",
+      "fresh",
+      "citrus"
+    ],
+    "sizes": [
+      "One Size"
+    ],
+    "shortDescription": "Five 10ml travel sizes to explore our full range.",
+    "description": "Not sure where to start? The Discovery Set includes five 10ml travel-sized perfumes across all scent families, presented in a Flora-branded zip pouch. Ideal as a first gift or a personal sampling journey.",
+    "scentNotes": {
+      "top": [
+        "Various"
+      ],
+      "heart": [],
+      "base": []
+    },
+    "isFeatured": false,
+    "isNew": false,
+    "isBestseller": false,
+    "createdAt": "2025-11-01"
+  }
+]
