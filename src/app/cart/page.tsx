@@ -8,7 +8,7 @@ import { CartSummary } from '@/components/cart/CartSummary'
 import { Button } from '@/components/ui/Button'
 
 export default function CartPage() {
-  const { items } = useCart()
+  const { items, totalItems } = useCart()
   const total = calculateTotal(items)
 
   return (
@@ -30,7 +30,7 @@ export default function CartPage() {
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-12">
             <div>
               <p className="text-[10px] tracking-widest uppercase text-stone mb-2">
-                {items.length} {items.length === 1 ? 'Item' : 'Items'}
+                {totalItems} {totalItems === 1 ? 'Item' : 'Items'}
               </p>
               {items.map((item) => (
                 <CartItem key={`${item.product.id}-${item.size}`} item={item} />

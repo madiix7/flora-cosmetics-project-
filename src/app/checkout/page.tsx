@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
@@ -33,6 +33,10 @@ export default function CheckoutPage() {
   const total = calculateTotal(items)
   const delivery = calculateDelivery(total)
 
+  useEffect(() => {
+    if (items.length === 0) router.replace('/cart')
+  }, [items.length, router])
+
   const [form, setForm] = useState<FormData>({
     fullName: '',
     phone: '',
@@ -51,7 +55,10 @@ export default function CheckoutPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (items.length === 0) return
+    if (items.length === 0) {
+      router.push('/cart')
+      return
+    }
     const errs = validate(form)
     if (Object.keys(errs).length > 0) {
       setErrors(errs)
