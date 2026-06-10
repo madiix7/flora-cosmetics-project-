@@ -1,0 +1,4 @@
+name = "flora-cosmetics-cdn"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+account_id = "51e2a7b1240059b62875f9b4e6e417ca"
