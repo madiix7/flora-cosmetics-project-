@@ -43,14 +43,17 @@ export function sanitizeProduct(
     ? b.scentNotes
     : {}) as Record<string, unknown>
 
+  const slug =
+    typeof b.slug === 'string' && b.slug.trim()
+      ? b.slug.replace(/[^a-z0-9-]/g, '').slice(0, 100)
+      : toSlug(String(b.name))
+  if (!slug) return { ok: false, error: 'name must contain at least one alphanumeric character' }
+
   return {
     ok: true,
     product: {
       id: existingId,
-      slug:
-        typeof b.slug === 'string' && b.slug.trim()
-          ? b.slug.replace(/[^a-z0-9-]/g, '').slice(0, 100)
-          : toSlug(String(b.name)),
+      slug,
       name: String(b.name).slice(0, 200).trim(),
       price: Math.max(0, Math.round(Number(b.price))),
       category: b.category as Category,

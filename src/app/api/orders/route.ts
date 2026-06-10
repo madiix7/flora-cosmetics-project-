@@ -112,6 +112,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid gouvernorat' }, { status: 400 })
   }
 
+  // Phone: only digits, spaces, +, -, (, ); 7–15 digits total (E.164 max)
+  const phoneStr = String(phone).trim()
+  const digitCount = (phoneStr.match(/\d/g) ?? []).length
+  if (!/^[+\d\s\-().]+$/.test(phoneStr) || digitCount < 7 || digitCount > 15) {
+    return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 })
+  }
+
   const order: Order = {
     id: generateOrderId(),
     items: resolvedItems,

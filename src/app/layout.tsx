@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Cormorant_Garamond, DM_Sans } from 'next/font/google'
+import { headers } from 'next/headers'
 import Script from 'next/script'
 import { CartProvider } from '@/context/CartContext'
 import { Navbar } from '@/components/layout/Navbar'
@@ -33,8 +34,11 @@ export const metadata: Metadata = {
 const GA_ID_RE = /^G-[A-Z0-9]{6,12}$/
 const PIXEL_ID_RE = /^\d{10,20}$/
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = getSettings()
+  // Read the per-request nonce injected by middleware. Next.js propagates this
+  // nonce automatically to its own generated inline scripts when it sees 'x-nonce'.
+  const nonce = (await headers()).get('x-nonce') ?? ''
 
   const gaId = GA_ID_RE.test(settings.googleAnalyticsId ?? '') ? settings.googleAnalyticsId : ''
   const pixelId = PIXEL_ID_RE.test(settings.metaPixelId ?? '') ? settings.metaPixelId : ''
@@ -48,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         {pixelId ? (
           <script
+            nonce={nonce}
             dangerouslySetInnerHTML={{
               __html: `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${pixelId}');fbq('track','PageView');`,
             }}
@@ -57,8 +62,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {gaId ? (
           <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
-            <Script id="google-analytics" strategy="afterInteractive">
+            <Script nonce={nonce} src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} strategy="afterInteractive" />
+            <Script nonce={nonce} id="google-analytics" strategy="afterInteractive">
               {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`}
             </Script>
           </>

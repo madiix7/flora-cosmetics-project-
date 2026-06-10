@@ -9,6 +9,18 @@ const STRING_FIELDS: (keyof Settings)[] = [
   'instagram', 'facebook', 'tiktok', 'announcementText', 'announcementLink',
   'brandStoryTitle', 'googleAnalyticsId', 'metaPixelId',
 ]
+
+// Exhaustive allowlist of every key that PATCH is permitted to modify.
+// Unknown keys sent by clients are silently dropped — no spread-based mass-assignment.
+const PATCHABLE_KEYS = new Set<keyof Settings>([
+  ...STRING_FIELDS,
+  'brandStoryBody',
+  'freeDeliveryThreshold',
+  'deliveryFee',
+  'announcementEnabled',
+  'audienceTags',
+  'seasonTags',
+])
 const STRING_MAX = 2000
 const BODY_MAX = 10000
 const TAG_MAX_ITEMS = 20
@@ -68,7 +80,14 @@ export async function PATCH(req: NextRequest) {
   }
 
   const current = getSettings()
-  const updated: Settings = { ...current, ...body }
+  // Whitelist-only merge: copy only PATCHABLE_KEYS from body into current settings.
+  // This prevents prototype pollution and mass-assignment of internal/unknown fields.
+  const updated = { ...current } as Settings
+  for (const key of Object.keys(body) as (keyof Settings)[]) {
+    if (PATCHABLE_KEYS.has(key)) {
+      ;(updated as Record<string, unknown>)[key] = (body as Record<string, unknown>)[key]
+    }
+  }
   saveSettings(updated)
   auditLog('settings.updated', { fields: Object.keys(body) })
   return NextResponse.json(updated)
