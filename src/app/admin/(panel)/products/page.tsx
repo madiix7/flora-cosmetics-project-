@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { formatPrice } from '@/lib/utils'
 import type { Product } from '@/types'
 
@@ -16,7 +15,7 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('')
 
   useEffect(() => {
-    fetch('/api/products')
+    fetch('/api/products', { cache: 'no-store' })
       .then((r) => {
         if (r.status === 401) { router.push('/admin/login'); return null }
         if (!r.ok) throw new Error('load failed')
@@ -93,8 +92,13 @@ export default function ProductsPage() {
               {visible.map((product) => (
                 <tr key={product.id} className="hover:bg-parchment/20 transition-colors">
                   <td className="px-4 py-3 w-14">
-                    <div className="relative w-10 h-12 bg-parchment overflow-hidden">
-                      <Image src={product.images[0]} alt={product.name} fill className="object-cover" />
+                    <div className="w-10 h-12 bg-parchment overflow-hidden flex items-center justify-center shrink-0">
+                      {product.images[0] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-[9px] text-stone/40 tracking-widest uppercase">No<br/>photo</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
