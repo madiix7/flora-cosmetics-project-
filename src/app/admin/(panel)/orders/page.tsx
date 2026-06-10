@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/utils'
 import type { Order, OrderStatus } from '@/types'
@@ -15,16 +16,24 @@ const STATUS_COLOR: Record<OrderStatus, string> = {
 const FILTERS: (OrderStatus | 'all')[] = ['all', 'pending', 'confirmed', 'delivered', 'cancelled']
 
 export default function OrdersPage() {
+  const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [filter, setFilter] = useState<OrderStatus | 'all'>('all')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [actionError, setActionError] = useState('')
 
   useEffect(() => {
     fetch('/api/orders')
-      .then((r) => r.json())
-      .then((data) => { setOrders(data); setLoading(false) })
-  }, [])
+      .then((r) => {
+        if (r.status === 401) { router.push('/admin/login'); return null }
+        if (!r.ok) throw new Error('load failed')
+        return r.json() as Promise<Order[]>
+      })
+      .then((data) => { if (data) { setOrders(data); setLoading(false) } })
+      .catch(() => { setLoadError(true); setLoading(false) })
+  }, [router])
 
   const visible = orders.filter((o) => {
     const matchesFilter = filter === 'all' || o.status === filter
@@ -38,19 +47,60 @@ export default function OrdersPage() {
     return matchesFilter && matchesSearch
   })
 
+  const showActionError = (msg: string) => {
+    setActionError(msg)
+    setTimeout(() => setActionError(''), 4000)
+  }
+
   const updateStatus = async (id: string, status: OrderStatus) => {
-    await fetch(`/api/orders/${id}`, {
+    const original = orders.find((o) => o.id === id)?.status
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)))
+    const res = await fetch(`/api/orders/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
-    })
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)))
+    }).catch(() => null)
+    if (!res?.ok && original) {
+      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: original } : o)))
+      showActionError('Failed to update status. Changes reverted.')
+    }
   }
 
   const deleteOrder = async (id: string) => {
     if (!confirm('Delete this order?')) return
-    await fetch(`/api/orders/${id}`, { method: 'DELETE' })
-    setOrders((prev) => prev.filter((o) => o.id !== id))
+    const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' }).catch(() => null)
+    if (res?.ok) {
+      setOrders((prev) => prev.filter((o) => o.id !== id))
+    } else {
+      showActionError('Failed to delete order. Please try again.')
+    }
+  }
+
+  const exportCSV = () => {
+    const rows = [
+      ['Order ID', 'Customer', 'Phone', 'Gouvernorat', 'Address', 'Items', 'Total', 'Status', 'Date'],
+      ...orders.map((o) => [
+        o.id,
+        o.customer.fullName,
+        o.customer.phone,
+        o.customer.wilaya,
+        o.customer.address,
+        o.items.map((i) => `${i.product.name} x${i.quantity}`).join('; '),
+        o.total.toString(),
+        o.status,
+        new Date(o.createdAt).toLocaleDateString('fr-TN'),
+      ]),
+    ]
+    const sanitize = (cell: unknown) =>
+      String(cell).replace(/\r?\n/g, ' ').replace(/"/g, '""')
+    const csv = rows.map((r) => r.map((cell) => `"${sanitize(cell)}"`).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `flora-orders-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -60,15 +110,31 @@ export default function OrdersPage() {
           <p className="text-[10px] tracking-widest uppercase text-stone mb-1">Manage</p>
           <h1 className="font-serif font-light text-3xl text-charcoal">Orders</h1>
         </div>
-        <p className="text-sm text-stone">{orders.length} total</p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-stone">{orders.length} total</p>
+          {orders.length > 0 && (
+            <button
+              onClick={exportCSV}
+              className="border border-parchment text-stone px-4 py-2 text-[10px] tracking-widest uppercase hover:border-charcoal hover:text-charcoal transition-colors rounded"
+            >
+              ↓ Export CSV
+            </button>
+          )}
+        </div>
       </div>
+
+      {actionError && (
+        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+          {actionError}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3 mb-6">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name, phone, wilaya…"
+          placeholder="Search name, phone, gouvernorat…"
           className="bg-ivory border border-parchment px-4 py-2 text-sm text-charcoal placeholder:text-stone/50 outline-none focus:border-charcoal transition-colors rounded w-64"
         />
         <div className="flex gap-2">
@@ -89,14 +155,16 @@ export default function OrdersPage() {
       <div className="bg-ivory rounded border border-parchment overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-sm text-stone">Loading…</div>
+        ) : loadError ? (
+          <div className="p-12 text-center text-sm text-red-500">Failed to load orders. Please refresh.</div>
         ) : visible.length === 0 ? (
           <div className="p-12 text-center text-sm text-stone">No orders match your filters.</div>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="border-b border-parchment bg-parchment/40">
-                {['Order', 'Customer', 'Wilaya', 'Items', 'Total', 'Status', 'Date', ''].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-[9px] tracking-widest uppercase text-stone font-normal">
+                {['Order', 'Customer', 'Gouvernorat', 'Items', 'Total', 'Status', 'Date', ''].map((h, i) => (
+                  <th key={i} className="px-4 py-3 text-left text-[9px] tracking-widest uppercase text-stone font-normal">
                     {h}
                   </th>
                 ))}
@@ -129,7 +197,7 @@ export default function OrdersPage() {
                     </select>
                   </td>
                   <td className="px-4 py-4 text-xs text-stone">
-                    {new Date(order.createdAt).toLocaleDateString('fr-DZ')}
+                    {new Date(order.createdAt).toLocaleDateString('fr-TN')}
                   </td>
                   <td className="px-4 py-4">
                     <button

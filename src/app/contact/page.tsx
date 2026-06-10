@@ -61,8 +61,8 @@ export default function ContactPage() {
           <div>
             <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Visit Us</p>
             <p className="text-sm text-charcoal font-serif">Flora Cosmetics</p>
-            <p className="text-sm text-stone mt-1">Rue Didouche Mourad, Algiers</p>
-            <p className="text-sm text-stone">Algeria</p>
+            <p className="text-sm text-stone mt-1">Avenue Habib Bourguiba, Tunis</p>
+            <p className="text-sm text-stone">Tunisia</p>
           </div>
           <div>
             <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Hours</p>
@@ -71,8 +71,8 @@ export default function ContactPage() {
           </div>
           <div>
             <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Reach Us</p>
-            <p className="text-sm text-stone">+213 555 000 000</p>
-            <p className="text-sm text-stone mt-1">hello@floracosmetics.dz</p>
+            <p className="text-sm text-stone">+216 XX XXX XXX</p>
+            <p className="text-sm text-stone mt-1">hello@floracosmetics.tn</p>
           </div>
           <div>
             <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Follow</p>

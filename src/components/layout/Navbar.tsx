@@ -4,13 +4,19 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useCart } from '@/context/CartContext'
 
+type Announcement = { text: string; link?: string }
+
+function isSafeHref(href: string): boolean {
+  return href.startsWith('/') || href.startsWith('http://') || href.startsWith('https://')
+}
+
 const NAV_LINKS = [
   { href: '/shop', label: 'Shop' },
   { href: '/about', label: 'About' },
   { href: '/contact', label: 'Contact' },
 ]
 
-export function Navbar() {
+export function Navbar({ announcement }: { announcement?: Announcement }) {
   const { totalItems, openDrawer } = useCart()
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -28,6 +34,17 @@ export function Navbar() {
           scrolled || mobileOpen ? 'bg-ivory border-b border-parchment' : 'bg-transparent'
         }`}
       >
+        {announcement && (
+          <div className="bg-charcoal text-ivory text-center py-2 px-4">
+            {announcement.link && isSafeHref(announcement.link) ? (
+              <a href={announcement.link} className="text-[10px] tracking-widest uppercase hover:underline">
+                {announcement.text}
+              </a>
+            ) : (
+              <p className="text-[10px] tracking-widest uppercase">{announcement.text}</p>
+            )}
+          </div>
+        )}
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
           <Link
             href="/"
@@ -76,9 +93,9 @@ export function Navbar() {
         </div>
       </header>
 
-      {/* Mobile menu */}
+      {/* Mobile menu — offset accounts for optional announcement bar */}
       {mobileOpen && (
-        <div className="fixed inset-0 top-16 z-40 bg-ivory flex flex-col px-6 pt-8 pb-12 md:hidden">
+        <div role="dialog" aria-modal="true" aria-label="Mobile navigation" className={`fixed inset-0 ${announcement ? 'top-[calc(4rem+2.25rem)]' : 'top-16'} z-40 bg-ivory flex flex-col px-6 pt-8 pb-12 md:hidden`}>
           <nav className="flex flex-col gap-6">
             {NAV_LINKS.map(({ href, label }) => (
               <Link

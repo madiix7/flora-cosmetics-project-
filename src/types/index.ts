@@ -15,6 +15,7 @@ export type Product = {
   images: string[]
   category: Category
   scentFamily: ScentFamily[]
+  tags: string[]
   sizes: string[]
   shortDescription: string
   description: string
@@ -46,4 +47,27 @@ export type Order = {
   total: number
   status: OrderStatus
   createdAt: string
+}
+
+export type Settings = {
+  googleAnalyticsId: string
+  metaPixelId: string
+  storeName: string
+  storeTagline: string
+  storePhone: string
+  storeEmail: string
+  storeAddress: string
+  storeWilaya: string
+  instagram: string
+  facebook: string
+  tiktok: string
+  announcementEnabled: boolean
+  announcementText: string
+  announcementLink: string
+  freeDeliveryThreshold: number
+  deliveryFee: number
+  brandStoryTitle: string
+  brandStoryBody: string
+  audienceTags: string[]
+  seasonTags: string[]
 }

@@ -1,9 +1,13 @@
+'use client'
+
 import Link from 'next/link'
-import { formatPrice, calculateDelivery } from '@/lib/utils'
+import { useCart } from '@/context/CartContext'
+import { formatPrice } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 
 export function CartSummary({ total }: { total: number }) {
-  const delivery = calculateDelivery(total)
+  const { freeDeliveryThreshold, deliveryFee } = useCart()
+  const delivery = total >= freeDeliveryThreshold ? 0 : deliveryFee
 
   return (
     <div className="bg-parchment p-8 h-fit sticky top-24">
@@ -17,6 +21,11 @@ export function CartSummary({ total }: { total: number }) {
           <span className="text-stone">Delivery</span>
           <span className="text-charcoal">{delivery === 0 ? 'Free' : formatPrice(delivery)}</span>
         </div>
+        {total < freeDeliveryThreshold && (
+          <p className="text-[10px] text-stone">
+            Add {formatPrice(freeDeliveryThreshold - total)} more for free delivery
+          </p>
+        )}
         <div className="border-t border-sand pt-3 flex justify-between">
           <span className="text-[10px] tracking-widest uppercase text-stone">Total</span>
           <span className="font-serif text-xl text-charcoal">

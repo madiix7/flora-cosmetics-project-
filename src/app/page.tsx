@@ -4,11 +4,13 @@ import { BrandStrip } from '@/components/home/BrandStrip'
 import { ScentCategories } from '@/components/home/ScentCategories'
 import { BrandStorySnippet } from '@/components/home/BrandStorySnippet'
 import { NewsletterSection } from '@/components/home/NewsletterSection'
-import { getFeaturedProducts, products } from '@/data/products'
+import { getProducts, getSettings } from '@/lib/server-data'
 
 export default function HomePage() {
-  const featured = getFeaturedProducts()
-  const showcaseProducts = products.slice(0, 4)
+  const allProducts = getProducts()
+  const featured = allProducts.filter((p) => p.isFeatured).slice(0, 3)
+  const showcaseProducts = allProducts.slice(0, 4)
+  const settings = getSettings()
 
   return (
     <>
@@ -16,7 +18,10 @@ export default function HomePage() {
       <FeaturedProducts products={showcaseProducts} />
       <BrandStrip />
       <ScentCategories />
-      <BrandStorySnippet />
+      <BrandStorySnippet
+        title={settings.brandStoryTitle || undefined}
+        body={settings.brandStoryBody || undefined}
+      />
       <NewsletterSection />
     </>
   )

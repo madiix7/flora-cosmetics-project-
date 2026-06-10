@@ -13,17 +13,23 @@ export default function LoginForm() {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    })
-    setLoading(false)
-    if (res.ok) {
-      router.push('/admin')
-      router.refresh()
-    } else {
-      setError('Incorrect password')
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      })
+      if (res.ok) {
+        router.push('/admin')
+        router.refresh()
+      } else {
+        const body = await res.json().catch(() => ({}))
+        setError((body as { error?: string }).error ?? 'Incorrect password')
+      }
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 

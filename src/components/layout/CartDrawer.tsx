@@ -3,11 +3,11 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
-import { formatPrice, calculateTotal, FREE_DELIVERY_THRESHOLD } from '@/lib/utils'
+import { formatPrice, calculateTotal } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 
 export function CartDrawer() {
-  const { items, isDrawerOpen, closeDrawer, removeItem, updateQuantity, totalItems } = useCart()
+  const { items, isDrawerOpen, closeDrawer, removeItem, updateQuantity, totalItems, freeDeliveryThreshold } = useCart()
   const total = calculateTotal(items)
 
   return (
@@ -94,7 +94,7 @@ export function CartDrawer() {
                 <span className="font-serif text-lg text-charcoal">{formatPrice(total)}</span>
               </div>
               <p className="text-[10px] text-stone tracking-wide">
-                Cash on delivery · Free shipping on orders over {FREE_DELIVERY_THRESHOLD.toLocaleString('fr-DZ')} DZD
+                Cash on delivery · Free delivery on orders over {formatPrice(freeDeliveryThreshold)}
               </p>
               <Link href="/checkout" onClick={closeDrawer}>
                 <Button className="w-full justify-center">Proceed to Checkout</Button>

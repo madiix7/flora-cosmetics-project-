@@ -7,6 +7,8 @@ import type { Product, Category, ScentFamily } from '@/types'
 type Props = {
   initial?: Partial<Product>
   mode: 'new' | 'edit'
+  audienceTags: string[]
+  seasonTags: string[]
 }
 
 const CATEGORIES: Category[] = ['perfume', 'body-care', 'candle', 'gift-set']
@@ -16,7 +18,11 @@ function slugify(str: string) {
   return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 }
 
-export function ProductForm({ initial, mode }: Props) {
+function formatTag(tag: string) {
+  return tag.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+export function ProductForm({ initial, mode, audienceTags, seasonTags }: Props) {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -28,6 +34,7 @@ export function ProductForm({ initial, mode }: Props) {
     price: initial?.price ?? 0,
     category: initial?.category ?? 'perfume' as Category,
     scentFamily: initial?.scentFamily ?? [] as ScentFamily[],
+    tags: initial?.tags ?? [] as string[],
     sizes: (initial?.sizes ?? ['30ml']).join(', '),
     images: (initial?.images ?? ['']).join('\n'),
     shortDescription: initial?.shortDescription ?? '',
@@ -53,6 +60,15 @@ export function ProductForm({ initial, mode }: Props) {
     }))
   }
 
+  const toggleTag = (tag: string) => {
+    setForm((f) => ({
+      ...f,
+      tags: f.tags.includes(tag)
+        ? f.tags.filter((t) => t !== tag)
+        : [...f.tags, tag],
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -65,6 +81,7 @@ export function ProductForm({ initial, mode }: Props) {
       price: Number(form.price),
       category: form.category,
       scentFamily: form.scentFamily,
+      tags: form.tags,
       sizes: form.sizes.split(',').map((s) => s.trim()).filter(Boolean),
       images: form.images.split('\n').map((s) => s.trim()).filter(Boolean),
       shortDescription: form.shortDescription,
@@ -83,19 +100,24 @@ export function ProductForm({ initial, mode }: Props) {
     const url = mode === 'new' ? '/api/products' : `/api/products/${product.id}`
     const method = mode === 'new' ? 'POST' : 'PUT'
 
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(product),
-    })
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product),
+      })
 
-    setSaving(false)
-    if (res.ok) {
-      router.push('/admin/products')
-      router.refresh()
-    } else {
-      const { error: msg } = await res.json()
-      setError(msg ?? 'Failed to save')
+      if (res.ok) {
+        router.push('/admin/products')
+        router.refresh()
+      } else {
+        const body = await res.json().catch(() => ({}))
+        setError((body as { error?: string }).error ?? 'Failed to save. Please try again.')
+      }
+    } catch {
+      setError('Network error. Please check your connection and try again.')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -123,7 +145,7 @@ export function ProductForm({ initial, mode }: Props) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className={labelClass}>Price (DZD) *</label>
+            <label className={labelClass}>Price (DT) *</label>
             <input required type="number" min={0} value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value) }))} className={inputClass} />
           </div>
           <div>
@@ -159,6 +181,47 @@ export function ProductForm({ initial, mode }: Props) {
         <textarea value={form.images} onChange={(e) => setForm((f) => ({ ...f, images: e.target.value }))} rows={3}
           placeholder="https://images.unsplash.com/..." className="w-full bg-transparent border border-parchment focus:border-charcoal p-3 text-sm text-charcoal placeholder:text-stone/40 outline-none resize-y rounded font-mono" />
       </div>
+
+      {/* Collections */}
+      {(audienceTags.length > 0 || seasonTags.length > 0) && (
+        <div className="bg-ivory rounded border border-parchment p-6 space-y-5">
+          <p className="text-[10px] tracking-widest uppercase text-charcoal">Collections</p>
+
+          {audienceTags.length > 0 && (
+            <div>
+              <p className="text-[9px] tracking-widest uppercase text-stone mb-2">Audience</p>
+              <div className="flex gap-2 flex-wrap">
+                {audienceTags.map((tag) => (
+                  <button key={tag} type="button" onClick={() => toggleTag(tag)}
+                    className={`px-3 py-1.5 text-[10px] tracking-widest uppercase rounded transition-colors ${
+                      form.tags.includes(tag) ? 'bg-charcoal text-ivory' : 'border border-parchment text-stone hover:border-charcoal'
+                    }`}>
+                    {formatTag(tag)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {seasonTags.length > 0 && (
+            <div>
+              <p className="text-[9px] tracking-widest uppercase text-stone mb-2">Season</p>
+              <div className="flex gap-2 flex-wrap">
+                {seasonTags.map((tag) => (
+                  <button key={tag} type="button" onClick={() => toggleTag(tag)}
+                    className={`px-3 py-1.5 text-[10px] tracking-widest uppercase rounded transition-colors ${
+                      form.tags.includes(tag) ? 'bg-charcoal text-ivory' : 'border border-parchment text-stone hover:border-charcoal'
+                    }`}>
+                    {formatTag(tag)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <p className="text-[9px] text-stone/50">Manage available tags in Content → Categories.</p>
+        </div>
+      )}
 
       {/* Scent */}
       <div className="bg-ivory rounded border border-parchment p-6 space-y-5">

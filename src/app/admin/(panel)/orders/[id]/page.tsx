@@ -16,22 +16,30 @@ export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
   const [order, setOrder] = useState<Order | null>(null)
+  const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
-    fetch('/api/orders')
-      .then((r) => r.json())
-      .then((orders: Order[]) => setOrder(orders.find((o) => o.id === id) ?? null))
-  }, [id])
+    fetch(`/api/orders/${id}`)
+      .then((r) => {
+        if (r.status === 401) { router.push('/admin/login'); return null }
+        if (!r.ok) { setNotFound(true); return null }
+        return r.json() as Promise<Order>
+      })
+      .then((data) => { if (data) setOrder(data) })
+  }, [id, router])
 
   const updateStatus = async (status: OrderStatus) => {
-    await fetch(`/api/orders/${id}`, {
+    const original = order?.status
+    setOrder((o) => o ? { ...o, status } : null)
+    const res = await fetch(`/api/orders/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
-    })
-    setOrder((o) => o ? { ...o, status } : null)
+    }).catch(() => null)
+    if (!res?.ok && original) setOrder((o) => o ? { ...o, status: original } : null)
   }
 
+  if (notFound) return <div className="text-sm text-stone p-8">Order not found.</div>
   if (!order) return <div className="text-sm text-stone">Loading…</div>
 
   return (
@@ -78,7 +86,7 @@ export default function OrderDetailPage() {
             <div className="space-y-2 text-sm">
               <div className="flex gap-4"><span className="text-stone w-24">Name</span><span className="text-charcoal">{order.customer.fullName}</span></div>
               <div className="flex gap-4"><span className="text-stone w-24">Phone</span><span className="text-charcoal">{order.customer.phone}</span></div>
-              <div className="flex gap-4"><span className="text-stone w-24">Wilaya</span><span className="text-charcoal">{order.customer.wilaya}</span></div>
+              <div className="flex gap-4"><span className="text-stone w-24">Gouvernorat</span><span className="text-charcoal">{order.customer.wilaya}</span></div>
               <div className="flex gap-4"><span className="text-stone w-24">Address</span><span className="text-charcoal">{order.customer.address}</span></div>
               {order.customer.notes && (
                 <div className="flex gap-4"><span className="text-stone w-24">Notes</span><span className="text-charcoal">{order.customer.notes}</span></div>
@@ -114,7 +122,7 @@ export default function OrderDetailPage() {
 
           <div className="bg-ivory rounded border border-parchment p-6">
             <p className="text-[10px] tracking-widest uppercase text-charcoal mb-3">Date</p>
-            <p className="text-sm text-stone">{new Date(order.createdAt).toLocaleString('fr-DZ')}</p>
+            <p className="text-sm text-stone">{new Date(order.createdAt).toLocaleString('fr-TN')}</p>
           </div>
         </div>
       </div>

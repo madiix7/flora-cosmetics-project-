@@ -1,18 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProducts, saveProducts } from '@/lib/server-data'
-import type { Product } from '@/types'
+import { requireAdmin } from '@/lib/admin-auth'
+import { sanitizeProduct } from '@/lib/validate'
+import { auditLog } from '@/lib/audit'
 
 export async function GET() {
+  const auth = await requireAdmin()
+  if (auth) return auth
   return NextResponse.json(getProducts())
 }
 
 export async function POST(req: NextRequest) {
-  const product: Product = await req.json()
-  const products = getProducts()
-  if (products.find((p) => p.id === product.id)) {
-    return NextResponse.json({ error: 'Duplicate id' }, { status: 409 })
+  const auth = await requireAdmin(req)
+  if (auth) return auth
+
+  const body = await req.json().catch(() => null)
+  const id = String(Date.now())
+  const result = sanitizeProduct(body, id)
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: 400 })
   }
-  products.push(product)
+
+  const products = getProducts()
+  if (products.find((p) => p.id === result.product.id || p.slug === result.product.slug)) {
+    return NextResponse.json({ error: 'Duplicate id or slug' }, { status: 409 })
+  }
+  products.push(result.product)
   saveProducts(products)
-  return NextResponse.json(product, { status: 201 })
+  auditLog('product.created', { id: result.product.id, name: result.product.name })
+  return NextResponse.json(result.product, { status: 201 })
 }

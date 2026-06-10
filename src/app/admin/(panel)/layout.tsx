@@ -1,15 +1,15 @@
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { validateSession } from '@/lib/sessions'
 import { AdminSidebar } from '@/components/admin/AdminSidebar'
 
 export const metadata: Metadata = { title: 'Flora Admin' }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies()
-  const session = cookieStore.get('admin_session')?.value
-
-  if (session !== 'authenticated') {
+  const token = cookieStore.get('admin_session')?.value
+  if (!(await validateSession(token))) {
     redirect('/admin/login')
   }
 

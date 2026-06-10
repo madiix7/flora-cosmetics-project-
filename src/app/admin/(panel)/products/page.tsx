@@ -1,26 +1,40 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { formatPrice } from '@/lib/utils'
 import type { Product } from '@/types'
 
 export default function ProductsPage() {
+  const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [actionError, setActionError] = useState('')
   const [search, setSearch] = useState('')
 
   useEffect(() => {
     fetch('/api/products')
-      .then((r) => r.json())
-      .then((data) => { setProducts(data); setLoading(false) })
-  }, [])
+      .then((r) => {
+        if (r.status === 401) { router.push('/admin/login'); return null }
+        if (!r.ok) throw new Error('load failed')
+        return r.json() as Promise<Product[]>
+      })
+      .then((data) => { if (data) { setProducts(data); setLoading(false) } })
+      .catch(() => { setLoadError(true); setLoading(false) })
+  }, [router])
 
   const deleteProduct = async (id: string, name: string) => {
     if (!confirm(`Delete "${name}"?`)) return
-    await fetch(`/api/products/${id}`, { method: 'DELETE' })
-    setProducts((prev) => prev.filter((p) => p.id !== id))
+    const res = await fetch(`/api/products/${id}`, { method: 'DELETE' }).catch(() => null)
+    if (res?.ok) {
+      setProducts((prev) => prev.filter((p) => p.id !== id))
+    } else {
+      setActionError('Failed to delete product. Please try again.')
+      setTimeout(() => setActionError(''), 4000)
+    }
   }
 
   const visible = products.filter((p) =>
@@ -51,17 +65,25 @@ export default function ProductsPage() {
         />
       </div>
 
+      {actionError && (
+        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded text-xs text-red-700">
+          {actionError}
+        </div>
+      )}
+
       <div className="bg-ivory rounded border border-parchment overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-sm text-stone">Loading…</div>
+        ) : loadError ? (
+          <div className="p-12 text-center text-sm text-red-500">Failed to load products. Please refresh.</div>
         ) : visible.length === 0 ? (
           <div className="p-12 text-center text-sm text-stone">No products found.</div>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="border-b border-parchment bg-parchment/40">
-                {['', 'Name', 'Category', 'Price', 'Sizes', 'Flags', ''].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-[9px] tracking-widest uppercase text-stone font-normal">
+                {['', 'Name', 'Category', 'Price', 'Sizes', 'Flags', ''].map((h, i) => (
+                  <th key={i} className="px-4 py-3 text-left text-[9px] tracking-widest uppercase text-stone font-normal">
                     {h}
                   </th>
                 ))}

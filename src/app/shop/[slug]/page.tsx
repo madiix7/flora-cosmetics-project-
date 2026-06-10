@@ -1,20 +1,24 @@
 import { notFound } from 'next/navigation'
-import { products, getProductBySlug } from '@/data/products'
+import { getProducts } from '@/lib/server-data'
 import { getRelatedProducts } from '@/lib/utils'
 import { ImageGallery } from '@/components/product/ImageGallery'
 import { ProductInfo } from '@/components/product/ProductInfo'
 import { RelatedProducts } from '@/components/product/RelatedProducts'
 
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }))
+// Allow slugs not known at build time to be rendered on-demand (admin-added products)
+export const dynamicParams = true
+
+export async function generateStaticParams() {
+  return getProducts().map((p) => ({ slug: p.slug }))
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const product = getProductBySlug(slug)
+  const allProducts = getProducts()
+  const product = allProducts.find((p) => p.slug === slug)
   if (!product) notFound()
 
-  const related = getRelatedProducts(products, product)
+  const related = getRelatedProducts(allProducts, product)
 
   return (
     <div className="pt-16">

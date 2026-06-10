@@ -1,16 +1,12 @@
 'use client'
 
 import type { Category, ScentFamily } from '@/types'
-
-type Filters = {
-  category: Category | 'all'
-  scent: ScentFamily | 'all'
-  sort: 'newest' | 'price-asc' | 'price-desc' | 'bestsellers'
-}
+import type { ShopFilters } from '@/app/shop/ShopClient'
 
 type Props = {
-  filters: Filters
-  onChange: (filters: Filters) => void
+  filters: ShopFilters
+  onChange: (filters: ShopFilters) => void
+  seasonTags: string[]
 }
 
 const categories: { value: Category | 'all'; label: string }[] = [
@@ -30,9 +26,45 @@ const scents: { value: ScentFamily | 'all'; label: string }[] = [
   { value: 'citrus', label: 'Citrus' },
 ]
 
-export function FilterSidebar({ filters, onChange }: Props) {
+function formatTag(tag: string) {
+  return tag.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+export function FilterSidebar({ filters, onChange, seasonTags }: Props) {
   return (
     <aside className="w-full md:w-56 shrink-0 space-y-8">
+      {/* Season */}
+      {seasonTags.length > 0 && (
+        <div>
+          <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Season</p>
+          <ul className="space-y-2">
+            <li>
+              <button
+                onClick={() => onChange({ ...filters, season: 'all' })}
+                className={`text-sm transition-colors ${
+                  filters.season === 'all' ? 'text-charcoal font-medium' : 'text-stone hover:text-charcoal'
+                }`}
+              >
+                All Seasons
+              </button>
+            </li>
+            {seasonTags.map((tag) => (
+              <li key={tag}>
+                <button
+                  onClick={() => onChange({ ...filters, season: tag })}
+                  className={`text-sm transition-colors ${
+                    filters.season === tag ? 'text-charcoal font-medium' : 'text-stone hover:text-charcoal'
+                  }`}
+                >
+                  {formatTag(tag)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Category */}
       <div>
         <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Category</p>
         <ul className="space-y-2">
@@ -41,9 +73,7 @@ export function FilterSidebar({ filters, onChange }: Props) {
               <button
                 onClick={() => onChange({ ...filters, category: value })}
                 className={`text-sm transition-colors ${
-                  filters.category === value
-                    ? 'text-charcoal font-medium'
-                    : 'text-stone hover:text-charcoal'
+                  filters.category === value ? 'text-charcoal font-medium' : 'text-stone hover:text-charcoal'
                 }`}
               >
                 {label}
@@ -53,6 +83,7 @@ export function FilterSidebar({ filters, onChange }: Props) {
         </ul>
       </div>
 
+      {/* Scent Family */}
       <div>
         <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Scent Family</p>
         <ul className="space-y-2">
@@ -61,9 +92,7 @@ export function FilterSidebar({ filters, onChange }: Props) {
               <button
                 onClick={() => onChange({ ...filters, scent: value })}
                 className={`text-sm transition-colors ${
-                  filters.scent === value
-                    ? 'text-charcoal font-medium'
-                    : 'text-stone hover:text-charcoal'
+                  filters.scent === value ? 'text-charcoal font-medium' : 'text-stone hover:text-charcoal'
                 }`}
               >
                 {label}
@@ -73,11 +102,12 @@ export function FilterSidebar({ filters, onChange }: Props) {
         </ul>
       </div>
 
+      {/* Sort */}
       <div>
         <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Sort</p>
         <select
           value={filters.sort}
-          onChange={(e) => onChange({ ...filters, sort: e.target.value as Filters['sort'] })}
+          onChange={(e) => onChange({ ...filters, sort: e.target.value as ShopFilters['sort'] })}
           className="text-sm text-charcoal bg-transparent border-b border-parchment pb-1 outline-none w-full"
         >
           <option value="newest">Newest</option>

@@ -1,10 +1,10 @@
 import type { CartItem, Product } from '@/types'
 
-export const FREE_DELIVERY_THRESHOLD = 5000
-export const DELIVERY_FEE = 500
+export const FREE_DELIVERY_THRESHOLD = 200
+export const DELIVERY_FEE = 8
 
 export function formatPrice(amount: number): string {
-  return `${amount.toLocaleString('fr-DZ')} DZD`
+  return `${amount.toLocaleString('fr-TN', { maximumFractionDigits: 0 })} DT`
 }
 
 export function calculateTotal(items: CartItem[]): number {
@@ -16,11 +16,13 @@ export function calculateDelivery(subtotal: number): number {
 }
 
 export function generateOrderId(): string {
-  const random =
-    typeof crypto !== 'undefined' && crypto.randomUUID
-      ? crypto.randomUUID().replace(/-/g, '').slice(0, 8)
-      : Math.floor(Math.random() * 1_000_000).toString().padStart(6, '0')
-  return `FL-${Date.now()}-${random}`
+  // Full UUID random — no timestamp component to prevent enumeration
+  const id = crypto.randomUUID
+    ? crypto.randomUUID().replace(/-/g, '').toUpperCase().slice(0, 16)
+    : Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) =>
+        b.toString(16).padStart(2, '0')
+      ).join('').toUpperCase()
+  return `FL-${id}`
 }
 
 export function getRelatedProducts(

@@ -10,7 +10,7 @@ import { ScentNotes } from './ScentNotes'
 import { Accordion } from '@/components/ui/Accordion'
 
 export function ProductInfo({ product }: { product: Product }) {
-  const { addItem } = useCart()
+  const { addItem, freeDeliveryThreshold } = useCart()
   const [selectedSize, setSelectedSize] = useState(product.sizes[0])
   const [quantity, setQuantity] = useState(1)
 
@@ -87,7 +87,7 @@ export function ProductInfo({ product }: { product: Product }) {
       </Button>
 
       <p className="text-[10px] tracking-widest text-stone">
-        Cash on delivery · Free shipping over 5,000 DZD
+        Cash on delivery · Free delivery over {formatPrice(freeDeliveryThreshold)}
       </p>
 
       <Accordion
@@ -109,8 +109,8 @@ export function ProductInfo({ product }: { product: Product }) {
             title: 'Delivery',
             content: (
               <p className="text-sm leading-relaxed">
-                We deliver across Algeria via cash on delivery. Standard delivery: 3–5 business
-                days. Express delivery available in Algiers: 1–2 business days.
+                We deliver across Tunisia via cash on delivery. Standard delivery: 3–5 business
+                days. Free delivery on orders over {formatPrice(freeDeliveryThreshold)}.
               </p>
             ),
           },

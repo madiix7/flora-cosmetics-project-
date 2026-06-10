@@ -1,6 +1,23 @@
 import Link from 'next/link'
 
-export function Footer() {
+function isSafeUrl(url: string): boolean {
+  return url.startsWith('http://') || url.startsWith('https://')
+}
+
+type FooterProps = {
+  instagram?: string
+  facebook?: string
+  tiktok?: string
+  storeTagline?: string
+}
+
+export function Footer({ instagram, facebook, tiktok, storeTagline }: FooterProps) {
+  const socials = [
+    { label: 'Instagram', href: instagram },
+    { label: 'Facebook', href: facebook },
+    { label: 'TikTok', href: tiktok },
+  ].filter((s): s is { label: string; href: string } => !!s.href && isSafeUrl(s.href))
+
   return (
     <footer className="bg-charcoal text-ivory/70 mt-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -9,8 +26,7 @@ export function Footer() {
             Flora
           </p>
           <p className="text-xs leading-relaxed font-light max-w-xs">
-            Artisan perfumes and cosmetics crafted with intention. Each fragrance is a
-            carefully composed narrative.
+            {storeTagline || 'Artisan perfumes and cosmetics crafted with intention. Each fragrance is a carefully composed narrative.'}
           </p>
         </div>
 
@@ -36,19 +52,19 @@ export function Footer() {
 
         <div>
           <p className="text-[10px] tracking-widest uppercase text-ivory/40 mb-5">Follow</p>
-          <ul className="space-y-3">
-            {[
-              { href: '#', label: 'Instagram' },
-              { href: '#', label: 'Facebook' },
-              { href: '#', label: 'TikTok' },
-            ].map(({ href, label }) => (
-              <li key={label}>
-                <a href={href} className="text-xs tracking-wider hover:text-ivory transition-colors">
-                  {label}
-                </a>
-              </li>
-            ))}
-          </ul>
+          {socials.length > 0 ? (
+            <ul className="space-y-3">
+              {socials.map(({ label, href }) => (
+                <li key={label}>
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-xs tracking-wider hover:text-ivory transition-colors">
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-ivory/30">Links coming soon</p>
+          )}
         </div>
       </div>
 

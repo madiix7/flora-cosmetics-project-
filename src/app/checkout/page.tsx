@@ -4,9 +4,18 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useCart } from '@/context/CartContext'
-import { calculateTotal, calculateDelivery, formatPrice, generateOrderId } from '@/lib/utils'
+import { calculateTotal, formatPrice } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import type { Order } from '@/types'
+
+const GOUVERNORATS = [
+  'Ariana', 'Béja', 'Ben Arous', 'Bizerte',
+  'Gabès', 'Gafsa', 'Jendouba', 'Kairouan',
+  'Kasserine', 'Kébili', 'Le Kef', 'Mahdia',
+  'Manouba', 'Médenine', 'Monastir', 'Nabeul',
+  'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse',
+  'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
+]
 
 type FormData = {
   fullName: string
@@ -22,20 +31,16 @@ function validate(data: FormData): FormErrors {
   const errors: FormErrors = {}
   if (!data.fullName.trim()) errors.fullName = 'Full name is required'
   if (!data.phone.trim()) errors.phone = 'Phone number is required'
-  if (!data.wilaya.trim()) errors.wilaya = 'Wilaya is required'
+  if (!data.wilaya.trim()) errors.wilaya = 'Gouvernorat is required'
   if (!data.address.trim()) errors.address = 'Delivery address is required'
   return errors
 }
 
 export default function CheckoutPage() {
-  const { items, clearCart } = useCart()
+  const { items, clearCart, freeDeliveryThreshold, deliveryFee, isLoaded } = useCart()
   const router = useRouter()
   const total = calculateTotal(items)
-  const delivery = calculateDelivery(total)
-
-  useEffect(() => {
-    if (items.length === 0) router.replace('/cart')
-  }, [items.length, router])
+  const delivery = total >= freeDeliveryThreshold ? 0 : deliveryFee
 
   const [form, setForm] = useState<FormData>({
     fullName: '',
@@ -45,15 +50,25 @@ export default function CheckoutPage() {
     notes: '',
   })
   const [errors, setErrors] = useState<FormErrors>({})
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [orderSuccess, setOrderSuccess] = useState(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  useEffect(() => {
+    if (isLoaded && items.length === 0 && !submitting) router.replace('/cart')
+  }, [items.length, isLoaded, submitting, router])
+
+  if (!isLoaded) return null
+  if (orderSuccess) return null
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
     if (errors[e.target.name as keyof FormData]) {
       setErrors({ ...errors, [e.target.name]: undefined })
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (items.length === 0) {
       router.push('/cart')
@@ -65,31 +80,33 @@ export default function CheckoutPage() {
       return
     }
 
-    const order: Order = {
-      id: generateOrderId(),
-      items,
-      customer: form,
-      total: total + delivery,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-    }
+    setSubmitting(true)
+    setSubmitError('')
 
-    // Persist to server (admin can see it) + localStorage (confirmation page)
-    await fetch('/api/orders', {
+    const res = await fetch('/api/orders', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(order),
-    })
-    localStorage.setItem('flora_last_order', JSON.stringify(order))
+      body: JSON.stringify({ items, customer: form, total: total + delivery }),
+    }).catch(() => null)
 
+    if (!res?.ok) {
+      setSubmitError('Failed to place order. Please try again.')
+      setSubmitting(false)
+      return
+    }
+
+    const savedOrder = await res.json() as Order
+    localStorage.setItem('flora_last_order', JSON.stringify(savedOrder))
+    setOrderSuccess(true)
     clearCart()
     router.push('/order-confirmed')
   }
 
+  const fieldBorder = (field: keyof FormData) =>
+    errors[field] ? 'border-red-400' : 'border-parchment focus:border-charcoal'
+
   const inputClass = (field: keyof FormData) =>
-    `w-full bg-transparent border-b py-3 text-sm text-charcoal placeholder:text-stone/50 outline-none transition-colors ${
-      errors[field] ? 'border-red-400' : 'border-parchment focus:border-charcoal'
-    }`
+    `w-full bg-transparent border-b py-3 text-sm text-charcoal placeholder:text-stone/50 outline-none transition-colors ${fieldBorder(field)}`
 
   return (
     <div className="pt-16">
@@ -112,30 +129,35 @@ export default function CheckoutPage() {
                   placeholder="Full Name *"
                   className={inputClass('fullName')}
                 />
-                {errors.fullName && (
-                  <p className="text-xs text-red-400 mt-1">{errors.fullName}</p>
-                )}
+                {errors.fullName && <p className="text-xs text-red-400 mt-1">{errors.fullName}</p>}
               </div>
+
               <div>
                 <input
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
-                  placeholder="Phone Number *"
+                  placeholder="Phone Number * (+216 XX XXX XXX)"
                   className={inputClass('phone')}
                 />
                 {errors.phone && <p className="text-xs text-red-400 mt-1">{errors.phone}</p>}
               </div>
+
               <div>
-                <input
+                <select
                   name="wilaya"
                   value={form.wilaya}
                   onChange={handleChange}
-                  placeholder="Wilaya / City *"
-                  className={inputClass('wilaya')}
-                />
+                  className={`w-full bg-transparent border-b py-3 text-sm outline-none transition-colors appearance-none cursor-pointer ${fieldBorder('wilaya')} ${!form.wilaya ? 'text-stone/50' : 'text-charcoal'}`}
+                >
+                  <option value="" disabled>Gouvernorat *</option>
+                  {GOUVERNORATS.map((g) => (
+                    <option key={g} value={g} className="text-charcoal bg-white">{g}</option>
+                  ))}
+                </select>
                 {errors.wilaya && <p className="text-xs text-red-400 mt-1">{errors.wilaya}</p>}
               </div>
+
               <div>
                 <input
                   name="address"
@@ -144,10 +166,9 @@ export default function CheckoutPage() {
                   placeholder="Delivery Address *"
                   className={inputClass('address')}
                 />
-                {errors.address && (
-                  <p className="text-xs text-red-400 mt-1">{errors.address}</p>
-                )}
+                {errors.address && <p className="text-xs text-red-400 mt-1">{errors.address}</p>}
               </div>
+
               <textarea
                 name="notes"
                 value={form.notes}
@@ -160,17 +181,15 @@ export default function CheckoutPage() {
           </div>
 
           <div className="bg-parchment p-4">
-            <p className="text-[10px] tracking-widest uppercase text-stone mb-2">
-              Payment Method
-            </p>
+            <p className="text-[10px] tracking-widest uppercase text-stone mb-2">Payment Method</p>
             <p className="text-sm text-charcoal">Cash on Delivery</p>
-            <p className="text-xs text-stone mt-1">
-              You pay when your order arrives. No card details required.
-            </p>
+            <p className="text-xs text-stone mt-1">You pay when your order arrives. No card details required.</p>
           </div>
 
-          <Button type="submit" size="lg" className="w-full justify-center">
-            Place Order
+          {submitError && <p className="text-xs text-red-400">{submitError}</p>}
+
+          <Button type="submit" disabled={submitting} size="lg" className="w-full justify-center">
+            {submitting ? 'Placing order…' : 'Place Order'}
           </Button>
         </form>
 
@@ -205,9 +224,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-[10px] tracking-widest uppercase text-stone">Total</span>
-              <span className="font-serif text-xl text-charcoal">
-                {formatPrice(total + delivery)}
-              </span>
+              <span className="font-serif text-xl text-charcoal">{formatPrice(total + delivery)}</span>
             </div>
           </div>
         </div>
