@@ -24,7 +24,7 @@ function checkRateLimit(ip: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
-  const adminPassword = process.env.ADMIN_PASSWORD
+  const adminPassword = process.env.ADMIN_PASSWORD?.trim()
   if (!adminPassword) {
     // Do not reveal configuration state — generic 503
     return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
