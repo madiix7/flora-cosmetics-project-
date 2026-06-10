@@ -1,7 +1,10 @@
 import { appendFileSync, mkdirSync } from 'fs'
 import path from 'path'
 
-const LOG_PATH = path.join(process.cwd(), 'data', 'audit.log')
+const DATA_DIR =
+  process.env.DATA_DIR ??
+  (process.env.VERCEL ? '/tmp/flora-data' : path.join(process.cwd(), 'data'))
+const LOG_PATH = path.join(DATA_DIR, 'audit.log')
 
 export function auditLog(action: string, detail: Record<string, unknown>): void {
   const line = JSON.stringify({ ts: new Date().toISOString(), action, ...detail }) + '\n'

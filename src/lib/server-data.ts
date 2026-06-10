@@ -4,7 +4,11 @@ import path from 'path'
 import type { Order, Product, Settings } from '@/types'
 import { products as staticProducts } from '@/data/products'
 
-const DATA_DIR = path.join(process.cwd(), 'data')
+// Vercel serverless functions have a read-only project root — use /tmp instead.
+// DATA_DIR env var lets you override this for self-hosted deployments.
+const DATA_DIR =
+  process.env.DATA_DIR ??
+  (process.env.VERCEL ? '/tmp/flora-data' : path.join(process.cwd(), 'data'))
 
 function readJSON<T>(filename: string): T {
   return JSON.parse(readFileSync(path.join(DATA_DIR, filename), 'utf-8')) as T
