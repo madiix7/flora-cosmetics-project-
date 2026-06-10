@@ -89,6 +89,15 @@ export async function POST(req: NextRequest) {
   )
   const delivery = subtotal >= settings.freeDeliveryThreshold ? 0 : settings.deliveryFee
 
+  const VALID_GOUVERNORATS = new Set([
+    'Ariana', 'Béja', 'Ben Arous', 'Bizerte',
+    'Gabès', 'Gafsa', 'Jendouba', 'Kairouan',
+    'Kasserine', 'Kébili', 'Le Kef', 'Mahdia',
+    'Manouba', 'Médenine', 'Monastir', 'Nabeul',
+    'Sfax', 'Sidi Bouzid', 'Siliana', 'Sousse',
+    'Tataouine', 'Tozeur', 'Tunis', 'Zaghouan',
+  ])
+
   // Whitelist-extract customer fields — reject unknown keys
   const { fullName, phone, wilaya, address, notes } = body.customer as Record<string, unknown>
   if (
@@ -98,6 +107,9 @@ export async function POST(req: NextRequest) {
     typeof address !== 'string' || !address.trim()
   ) {
     return NextResponse.json({ error: 'Missing required customer fields' }, { status: 400 })
+  }
+  if (!VALID_GOUVERNORATS.has(String(wilaya).trim())) {
+    return NextResponse.json({ error: 'Invalid gouvernorat' }, { status: 400 })
   }
 
   const order: Order = {

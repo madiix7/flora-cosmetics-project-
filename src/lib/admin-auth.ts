@@ -2,17 +2,30 @@ import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { validateSession } from './sessions'
 
+// ALLOWED_ORIGINS: comma-separated list of trusted proxy origins (e.g. a Cloudflare Worker URL).
+// Required when a reverse proxy sits in front of Vercel and rewrites the Host header,
+// causing the browser's Origin to differ from the Vercel Host.
+const EXTRA_ORIGINS: Set<string> = new Set(
+  (process.env.ALLOWED_ORIGINS ?? '')
+    .split(',')
+    .map((s) => {
+      try { return new URL(s.trim()).host } catch { return '' }
+    })
+    .filter(Boolean)
+)
+
 /**
- * Returns a 403 response if the Origin header is present and does not match
- * the Host header. Blocks browser-based CSRF on state-mutating requests while
- * allowing non-browser clients (curl, mobile) that send no Origin.
+ * Returns false if the Origin header is present and does not match
+ * the Host header (or any explicitly trusted proxy origin).
+ * Allows non-browser clients (curl, mobile SDKs) that send no Origin header.
  */
 function originAllowed(req: NextRequest): boolean {
   const origin = req.headers.get('origin')
   if (!origin) return true
   const host = req.headers.get('host') ?? ''
   try {
-    return new URL(origin).host === host
+    const originHost = new URL(origin).host
+    return originHost === host || EXTRA_ORIGINS.has(originHost)
   } catch {
     return false
   }

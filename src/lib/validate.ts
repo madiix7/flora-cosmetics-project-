@@ -16,6 +16,11 @@ function safeStrings(val: unknown, maxItemLen: number, maxItems: number): string
     .filter(Boolean)
 }
 
+function safeImageUrl(url: string): boolean {
+  // Only allow absolute HTTPS URLs or root-relative paths. Blocks javascript:, data:, http:.
+  return url.startsWith('https://') || url.startsWith('/')
+}
+
 type ValidationOk = { ok: true; product: Product }
 type ValidationFail = { ok: false; error: string }
 export type ProductValidation = ValidationOk | ValidationFail
@@ -54,7 +59,7 @@ export function sanitizeProduct(
       ),
       tags: safeStrings(b.tags, 50, 20),
       sizes: safeStrings(b.sizes, 20, 10),
-      images: safeStrings(b.images, 500, 10),
+      images: safeStrings(b.images, 500, 10).filter(safeImageUrl),
       shortDescription:
         typeof b.shortDescription === 'string' ? b.shortDescription.slice(0, 500) : '',
       description: typeof b.description === 'string' ? b.description.slice(0, 5000) : '',

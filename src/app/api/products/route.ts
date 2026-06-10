@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
   if (auth) return auth
 
   const body = await req.json().catch(() => null)
-  const id = String(Date.now())
+  // crypto.randomUUID() is available in Node.js ≥ 14.17 and all Edge runtimes
+  const id = crypto.randomUUID()
   const result = sanitizeProduct(body, id)
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: 400 })

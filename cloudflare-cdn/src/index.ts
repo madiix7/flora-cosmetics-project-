@@ -31,6 +31,16 @@ export default {
     proxyHeaders.set('X-Forwarded-Host', url.hostname)
     proxyHeaders.set('X-Forwarded-Proto', url.protocol.replace(':', ''))
 
+    // Remove client-controllable IP headers to prevent rate-limit bypass.
+    // Replace with Cloudflare's CF-Connecting-IP which clients cannot forge.
+    proxyHeaders.delete('x-real-ip')
+    proxyHeaders.delete('x-forwarded-for')
+    const clientIp = request.headers.get('cf-connecting-ip')
+    if (clientIp) {
+      proxyHeaders.set('x-real-ip', clientIp)
+      proxyHeaders.set('x-forwarded-for', clientIp)
+    }
+
     const proxyRequest = new Request(targetUrl, {
       method: request.method,
       headers: proxyHeaders,

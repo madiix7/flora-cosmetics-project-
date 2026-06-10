@@ -23,7 +23,7 @@ const securityHeaders = [
       `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ''} https://www.googletagmanager.com https://connect.facebook.net`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://images.unsplash.com",
+      "img-src 'self' data: blob: https:",
       "connect-src 'self' ws://localhost:3000 wss://localhost:3000 https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net",
       "frame-src 'none'",
       "object-src 'none'",
