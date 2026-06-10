@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Product, Category, ScentFamily } from '@/types'
+import { ImageUploader } from '@/components/admin/ImageUploader'
 
 type Props = {
   initial?: Partial<Product>
@@ -36,7 +37,7 @@ export function ProductForm({ initial, mode, audienceTags, seasonTags }: Props) 
     scentFamily: initial?.scentFamily ?? [] as ScentFamily[],
     tags: initial?.tags ?? [] as string[],
     sizes: (initial?.sizes ?? ['30ml']).join(', '),
-    images: (initial?.images ?? ['']).join('\n'),
+    images: initial?.images ?? [] as string[],
     shortDescription: initial?.shortDescription ?? '',
     description: initial?.description ?? '',
     scentTop: (initial?.scentNotes?.top ?? []).join(', '),
@@ -83,7 +84,7 @@ export function ProductForm({ initial, mode, audienceTags, seasonTags }: Props) 
       scentFamily: form.scentFamily,
       tags: form.tags,
       sizes: form.sizes.split(',').map((s) => s.trim()).filter(Boolean),
-      images: form.images.split('\n').map((s) => s.trim()).filter(Boolean),
+      images: form.images,
       shortDescription: form.shortDescription,
       description: form.description,
       scentNotes: {
@@ -176,10 +177,16 @@ export function ProductForm({ initial, mode, audienceTags, seasonTags }: Props) 
 
       {/* Images */}
       <div className="bg-ivory rounded border border-parchment p-6">
-        <p className="text-[10px] tracking-widest uppercase text-charcoal mb-4">Images</p>
-        <label className={labelClass}>Image URLs (one per line)</label>
-        <textarea value={form.images} onChange={(e) => setForm((f) => ({ ...f, images: e.target.value }))} rows={3}
-          placeholder="https://images.unsplash.com/..." className="w-full bg-transparent border border-parchment focus:border-charcoal p-3 text-sm text-charcoal placeholder:text-stone/40 outline-none resize-y rounded font-mono" />
+        <p className="text-[10px] tracking-widest uppercase text-charcoal mb-1">Product Photos</p>
+        <p className="text-xs text-stone mb-5">
+          Upload photos from your computer or drag them directly onto the area below.
+          The first photo is shown as the main product image.
+        </p>
+        <ImageUploader
+          images={form.images}
+          onChange={(imgs) => setForm((f) => ({ ...f, images: imgs }))}
+          maxImages={10}
+        />
       </div>
 
       {/* Collections */}
