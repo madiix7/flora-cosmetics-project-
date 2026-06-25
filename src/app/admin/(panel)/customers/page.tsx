@@ -38,7 +38,7 @@ export default function CustomersPage() {
   const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
-    fetch('/api/orders')
+    fetch('/api/orders', { cache: 'no-store' })
       .then((r) => {
         if (r.status === 401) { router.push('/admin/login'); return null }
         if (!r.ok) throw new Error('load failed')

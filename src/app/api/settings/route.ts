@@ -29,7 +29,7 @@ const TAG_MAX_LEN = 50
 export async function GET() {
   const auth = await requireAdmin()
   if (auth) return auth
-  return NextResponse.json(getSettings())
+  return NextResponse.json(await getSettings())
 }
 
 export async function PATCH(req: NextRequest) {
@@ -79,7 +79,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'announcementEnabled must be a boolean' }, { status: 400 })
   }
 
-  const current = getSettings()
+  const current = await getSettings()
   // Whitelist-only merge: copy only PATCHABLE_KEYS from body into current settings.
   // This prevents prototype pollution and mass-assignment of internal/unknown fields.
   const updated = { ...current } as Settings
@@ -88,7 +88,7 @@ export async function PATCH(req: NextRequest) {
       ;(updated as Record<string, unknown>)[key] = (body as Record<string, unknown>)[key]
     }
   }
-  saveSettings(updated)
+  await saveSettings(updated)
   auditLog('settings.updated', { fields: Object.keys(body) })
   return NextResponse.json(updated)
 }

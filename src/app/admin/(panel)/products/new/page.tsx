@@ -1,8 +1,8 @@
 import { getSettings } from '@/lib/server-data'
 import { ProductForm } from '@/components/admin/ProductForm'
 
-export default function NewProductPage() {
-  const { audienceTags, seasonTags } = getSettings()
+export default async function NewProductPage() {
+  const { audienceTags, seasonTags } = await getSettings()
   return (
     <div>
       <div className="mb-8">

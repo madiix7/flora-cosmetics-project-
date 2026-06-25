@@ -1,6 +1,6 @@
 'use client'
 
-import type { Category, ScentFamily } from '@/types'
+import type { ScentFamily } from '@/types'
 import type { ShopFilters } from '@/app/shop/ShopClient'
 
 type Props = {
@@ -9,51 +9,31 @@ type Props = {
   seasonTags: string[]
 }
 
-const categories: { value: Category | 'all'; label: string }[] = [
-  { value: 'all', label: 'All Products' },
-  { value: 'perfume', label: 'Perfume' },
-  { value: 'body-care', label: 'Body Care' },
-  { value: 'candle', label: 'Candles' },
-  { value: 'gift-set', label: 'Gift Sets' },
-]
-
-const scents: { value: ScentFamily | 'all'; label: string }[] = [
-  { value: 'all', label: 'All Scents' },
-  { value: 'floral', label: 'Floral' },
-  { value: 'woody', label: 'Woody' },
-  { value: 'oriental', label: 'Oriental' },
-  { value: 'fresh', label: 'Fresh' },
-  { value: 'citrus', label: 'Citrus' },
-]
+const SCENTS: ScentFamily[] = ['floral', 'woody', 'oriental', 'fresh', 'citrus']
 
 function formatTag(tag: string) {
   return tag.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+function toggle<T>(arr: T[], val: T): T[] {
+  return arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val]
+}
+
 export function FilterSidebar({ filters, onChange, seasonTags }: Props) {
   return (
     <aside className="w-full md:w-56 shrink-0 space-y-8">
-      {/* Season */}
       {seasonTags.length > 0 && (
         <div>
           <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Season</p>
           <ul className="space-y-2">
-            <li>
-              <button
-                onClick={() => onChange({ ...filters, season: 'all' })}
-                className={`text-sm transition-colors ${
-                  filters.season === 'all' ? 'text-charcoal font-medium' : 'text-stone hover:text-charcoal'
-                }`}
-              >
-                All Seasons
-              </button>
-            </li>
             {seasonTags.map((tag) => (
               <li key={tag}>
                 <button
-                  onClick={() => onChange({ ...filters, season: tag })}
+                  onClick={() => onChange({ ...filters, seasons: toggle(filters.seasons, tag) })}
                   className={`text-sm transition-colors ${
-                    filters.season === tag ? 'text-charcoal font-medium' : 'text-stone hover:text-charcoal'
+                    filters.seasons.includes(tag)
+                      ? 'text-charcoal font-medium'
+                      : 'text-stone hover:text-charcoal'
                   }`}
                 >
                   {formatTag(tag)}
@@ -64,45 +44,26 @@ export function FilterSidebar({ filters, onChange, seasonTags }: Props) {
         </div>
       )}
 
-      {/* Category */}
-      <div>
-        <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Category</p>
-        <ul className="space-y-2">
-          {categories.map(({ value, label }) => (
-            <li key={value}>
-              <button
-                onClick={() => onChange({ ...filters, category: value })}
-                className={`text-sm transition-colors ${
-                  filters.category === value ? 'text-charcoal font-medium' : 'text-stone hover:text-charcoal'
-                }`}
-              >
-                {label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Scent Family */}
       <div>
         <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Scent Family</p>
         <ul className="space-y-2">
-          {scents.map(({ value, label }) => (
-            <li key={value}>
+          {SCENTS.map((s) => (
+            <li key={s}>
               <button
-                onClick={() => onChange({ ...filters, scent: value })}
+                onClick={() => onChange({ ...filters, scents: toggle(filters.scents, s) })}
                 className={`text-sm transition-colors ${
-                  filters.scent === value ? 'text-charcoal font-medium' : 'text-stone hover:text-charcoal'
+                  filters.scents.includes(s)
+                    ? 'text-charcoal font-medium'
+                    : 'text-stone hover:text-charcoal'
                 }`}
               >
-                {label}
+                {formatTag(s)}
               </button>
             </li>
           ))}
         </ul>
       </div>
 
-      {/* Sort */}
       <div>
         <p className="text-[10px] tracking-widest uppercase text-stone mb-4">Sort</p>
         <select

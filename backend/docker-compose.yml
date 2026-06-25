@@ -1,0 +1,87 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3001:3001'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      meilisearch:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgresql://flora:flora@postgres:5432/fragrances
+      - REDIS_URL=redis://redis:6379
+      - MEILISEARCH_HOST=http://meilisearch:7700
+      - MEILISEARCH_API_KEY=dev-master-key
+      - JWT_SECRET=change-me-in-production-use-long-random-string
+      - NODE_ENV=development
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: fragrances
+      POSTGRES_USER: flora
+      POSTGRES_PASSWORD: flora
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./prisma/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U flora -d fragrances']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.11
+    ports:
+      - '7700:7700'
+    environment:
+      MEILI_ENV: development
+      MEILI_MASTER_KEY: dev-master-key
+    volumes:
+      - meilidata:/meili_data
+
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    ports:
+      - '5433:5432'
+    environment:
+      DB_USER: flora
+      DB_PASSWORD: flora
+      DB_HOST: postgres
+      DB_NAME: fragrances
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 100
+      DEFAULT_POOL_SIZE: 20
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+  meilidata:

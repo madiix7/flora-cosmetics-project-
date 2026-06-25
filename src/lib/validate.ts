@@ -49,12 +49,32 @@ export function sanitizeProduct(
       : toSlug(String(b.name))
   if (!slug) return { ok: false, error: 'name must contain at least one alphanumeric character' }
 
+  // Parse per-size prices
+  let sizePrices: Record<string, number> | undefined = undefined
+  if (b.sizePrices && typeof b.sizePrices === 'object' && !Array.isArray(b.sizePrices)) {
+    const raw = b.sizePrices as Record<string, unknown>
+    const parsed: Record<string, number> = {}
+    for (const [key, val] of Object.entries(raw)) {
+      if (typeof key === 'string' && key.length > 0 && key.length <= 20 &&
+          typeof val === 'number' && Number.isFinite(val) && val >= 0) {
+        parsed[key.slice(0, 20).trim()] = Math.max(0, Math.round(Number(val)))
+      }
+    }
+    if (Object.keys(parsed).length > 0) sizePrices = parsed
+  }
+
+  const brand =
+    typeof b.brand === 'string' && b.brand.trim()
+      ? b.brand.slice(0, 100).trim()
+      : undefined
+
   return {
     ok: true,
     product: {
       id: existingId,
       slug,
       name: String(b.name).slice(0, 200).trim(),
+      ...(brand ? { brand } : {}),
       price: Math.max(0, Math.round(Number(b.price))),
       category: b.category as Category,
       scentFamily: (Array.isArray(b.scentFamily) ? b.scentFamily : []).filter(
@@ -62,6 +82,7 @@ export function sanitizeProduct(
       ),
       tags: safeStrings(b.tags, 50, 20),
       sizes: safeStrings(b.sizes, 20, 10),
+      ...(sizePrices ? { sizePrices } : {}),
       images: safeStrings(b.images, 500, 10).filter(safeImageUrl),
       shortDescription:
         typeof b.shortDescription === 'string' ? b.shortDescription.slice(0, 500) : '',

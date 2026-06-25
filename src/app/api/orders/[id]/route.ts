@@ -10,7 +10,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const auth = await requireAdmin()
   if (auth) return auth
   const { id } = await params
-  const order = getOrders().find((o) => o.id === id)
+  const order = (await getOrders()).find((o) => o.id === id)
   if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(order)
 }
@@ -26,13 +26,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Invalid or missing status' }, { status: 400 })
   }
 
-  const orders = getOrders()
+  const orders = await getOrders()
   const idx = orders.findIndex((o) => o.id === id)
   if (idx === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   const prev = orders[idx].status
   // Only allow status updates — no other fields can be overwritten via PATCH
   orders[idx] = { ...orders[idx], status }
-  saveOrders(orders)
+  await saveOrders(orders)
   auditLog('order.status_changed', { id, from: prev, to: status })
   return NextResponse.json(orders[idx])
 }
@@ -41,10 +41,10 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const auth = await requireAdmin(_req)
   if (auth) return auth
   const { id } = await params
-  const orders = getOrders()
+  const orders = await getOrders()
   const filtered = orders.filter((o) => o.id !== id)
   if (filtered.length === orders.length) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  saveOrders(filtered)
+  await saveOrders(filtered)
   auditLog('order.deleted', { id })
   return NextResponse.json({ ok: true })
 }

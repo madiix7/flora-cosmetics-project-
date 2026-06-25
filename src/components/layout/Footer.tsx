@@ -1,7 +1,10 @@
 import Link from 'next/link'
 
-function isSafeUrl(url: string): boolean {
-  return url.startsWith('http://') || url.startsWith('https://')
+function normalizeUrl(url: string): string | null {
+  if (!url) return null
+  if (url.startsWith('javascript:') || url.startsWith('data:')) return null
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  return `https://${url}`
 }
 
 type FooterProps = {
@@ -13,10 +16,10 @@ type FooterProps = {
 
 export function Footer({ instagram, facebook, tiktok, storeTagline }: FooterProps) {
   const socials = [
-    { label: 'Instagram', href: instagram },
-    { label: 'Facebook', href: facebook },
-    { label: 'TikTok', href: tiktok },
-  ].filter((s): s is { label: string; href: string } => !!s.href && isSafeUrl(s.href))
+    { label: 'Instagram', href: instagram ? normalizeUrl(instagram) : null },
+    { label: 'Facebook', href: facebook ? normalizeUrl(facebook) : null },
+    { label: 'TikTok', href: tiktok ? normalizeUrl(tiktok) : null },
+  ].filter((s): s is { label: string; href: string } => !!s.href)
 
   return (
     <footer className="bg-charcoal text-ivory/70 mt-24">

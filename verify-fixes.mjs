@@ -31,18 +31,24 @@ await page.screenshot({ path: `${SHOTS}/01-homepage.png` });
 // ─── STEP 2: Empty-cart checkout guard ───────────────────────────────────────
 await page.goto(`${BASE}/checkout`);
 await page.waitForLoadState('networkidle');
-// Fill all required fields
-await page.fill('[name=fullName]', 'Test User');
-await page.fill('[name=phone]', '0555000000');
-await page.fill('[name=wilaya]', 'Alger');
-await page.fill('[name=address]', '10 Rue Test');
-await page.click('button[type=submit]');
-await page.waitForTimeout(500);
+// Fill all required fields if still on checkout
+if (page.url().includes('checkout')) {
+  try {
+    await page.fill('[name=fullName]', 'Test User');
+    await page.fill('[name=phone]', '0555000000');
+    await page.fill('[name=wilaya]', 'Alger');
+    await page.fill('[name=address]', '10 Rue Test');
+    await page.click('button[type=submit]');
+    await page.waitForTimeout(500);
+  } catch (e) {
+    // might have redirected during fill
+  }
+}
 const url = page.url();
 if (url.includes('order-confirmed')) {
   bad('Empty-cart guard', 'Submitted empty cart and reached /order-confirmed — guard missing');
 } else {
-  ok('Empty-cart guard', `Submit with empty cart stayed on ${url}`);
+  ok('Empty-cart guard', `Submit with empty cart redirected to / stayed on ${url}`);
 }
 await page.screenshot({ path: `${SHOTS}/02-empty-cart-checkout.png` });
 
@@ -73,7 +79,7 @@ await page.goto(`${BASE}/cart`);
 await page.waitForLoadState('networkidle');
 const deliveryText = await page.textContent('text=Delivery');
 // Oud Intense at 4500 DZD × 3 = 13,500 which is ≥ 5000 → Free
-const summaryText = await page.textContent('.bg-parchment');
+const summaryText = await page.textContent('div.bg-parchment:has-text("Order Summary")');
 if (summaryText?.includes('Free')) ok('Delivery free ≥5000', 'Delivery shows "Free" for 13,500 DZD cart');
 else bad('Delivery free ≥5000', `Expected "Free", summary text: ${summaryText?.slice(0, 80)}`);
 await page.screenshot({ path: `${SHOTS}/04-cart-free-delivery.png` });
@@ -88,7 +94,7 @@ await page.click('button:has-text("Add to Cart")');
 await page.waitForTimeout(400);
 await page.goto(`${BASE}/cart`);
 await page.waitForLoadState('networkidle');
-const cartText = await page.textContent('.bg-parchment');
+const cartText = await page.textContent('div.bg-parchment:has-text("Order Summary")');
 if (cartText?.includes('500') || cartText?.includes('DZD')) {
   ok('Delivery fee <5000', '500 DZD fee shown for 1800 DZD cart');
 } else {
@@ -99,6 +105,12 @@ await page.screenshot({ path: `${SHOTS}/05-cart-delivery-fee.png` });
 // ─── STEP 6: Checkout with items — order goes through ─────────────────────────
 await page.goto(`${BASE}/checkout`);
 await page.waitForLoadState('networkidle');
+console.log('Step 6 current URL:', page.url());
+try {
+  await page.waitForSelector('[name=fullName]', { timeout: 2000 });
+} catch (e) {
+  console.log('Could not find fullName. Current HTML:', await page.innerHTML('body'));
+}
 await page.fill('[name=fullName]', 'Mehdi Fezzani');
 await page.fill('[name=phone]', '0555123456');
 await page.fill('[name=wilaya]', 'Alger');
@@ -143,13 +155,14 @@ else bad('Hamburger visible on mobile', 'button[aria-label="Open menu"] not foun
 // Click hamburger, mobile menu opens
 await mobilePage.click('button[aria-label="Open menu"]');
 await mobilePage.waitForTimeout(300);
-const shopLink = await mobilePage.isVisible('text=Shop');
+const shopLinkLocator = mobilePage.locator('div[role="dialog"] a:has-text("Shop")');
+const shopLink = await shopLinkLocator.isVisible();
 if (shopLink) ok('Mobile menu opens', 'Shop link visible after hamburger click');
 else bad('Mobile menu opens', 'Shop link not visible');
 await mobilePage.screenshot({ path: `${SHOTS}/08-mobile-menu.png` });
 
 // Navigate via mobile menu
-await mobilePage.click('text=Shop');
+await shopLinkLocator.click();
 await mobilePage.waitForURL(`${BASE}/shop`);
 ok('Mobile nav navigates', 'Clicked Shop in mobile menu → /shop');
 await mobilePage.screenshot({ path: `${SHOTS}/09-mobile-shop.png` });

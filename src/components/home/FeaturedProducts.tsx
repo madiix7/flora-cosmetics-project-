@@ -32,12 +32,18 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
           <div key={product.id} className="group">
             <Link href={`/shop/${product.slug}`} className="block">
               <div className="relative aspect-[3/4] bg-parchment overflow-hidden mb-4">
-                <Image
-                  src={product.images[0]}
-                  alt={product.name}
-                  fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+                {product.images[0] ? (
+                  <Image
+                    src={product.images[0]}
+                    alt={product.name}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-[9px] tracking-widest uppercase text-stone/30">No photo</span>
+                  </div>
+                )}
                 {product.isNew && (
                   <div className="absolute top-3 left-3">
                     <Badge>New</Badge>

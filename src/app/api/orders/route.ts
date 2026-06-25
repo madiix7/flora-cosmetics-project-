@@ -28,7 +28,7 @@ function checkOrderRateLimit(ip: string): boolean {
 export async function GET() {
   const auth = await requireAdmin()
   if (auth) return auth
-  return NextResponse.json(getOrders())
+  return NextResponse.json(await getOrders())
 }
 
 export async function POST(req: NextRequest) {
@@ -57,8 +57,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Order exceeds maximum item count' }, { status: 400 })
   }
 
-  const settings = getSettings()
-  const allProducts = getProducts()
+  const [settings, allProducts] = await Promise.all([getSettings(), getProducts()])
 
   // Resolve every item from AUTHORITATIVE server-side product data.
   // Client-supplied product fields (name, description, images, etc.) are discarded.
@@ -80,11 +79,12 @@ export async function POST(req: NextRequest) {
     const size = authoritative.sizes.includes(requestedSize)
       ? requestedSize
       : authoritative.sizes[0]
-    resolvedItems.push({ product: authoritative, size, quantity: qty as number })
+    const price = authoritative.sizePrices?.[size] ?? authoritative.price
+    resolvedItems.push({ product: authoritative, size, quantity: qty as number, price })
   }
 
   const subtotal = resolvedItems.reduce(
-    (sum, i) => sum + i.product.price * i.quantity,
+    (sum, i) => sum + i.price * i.quantity,
     0
   )
   const delivery = subtotal >= settings.freeDeliveryThreshold ? 0 : settings.deliveryFee
@@ -134,9 +134,9 @@ export async function POST(req: NextRequest) {
     createdAt: new Date().toISOString(),
   }
 
-  const orders = getOrders()
+  const orders = await getOrders()
   orders.unshift(order)
-  saveOrders(orders)
+  await saveOrders(orders)
   auditLog('order.created', { id: order.id, total: order.total, items: order.items.length })
   return NextResponse.json(order, { status: 201 })
 }

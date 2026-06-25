@@ -2,3 +2,7 @@ name = "flora-cosmetics-cdn"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 account_id = "51e2a7b1240059b62875f9b4e6e417ca"
+
+[[kv_namespaces]]
+binding = "FLORA_KV"
+id = "a1c7adb4d83c4559be805593b671b6d1"

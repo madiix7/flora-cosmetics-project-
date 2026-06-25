@@ -35,7 +35,7 @@ const GA_ID_RE = /^G-[A-Z0-9]{6,12}$/
 const PIXEL_ID_RE = /^\d{10,20}$/
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const settings = getSettings()
+  const settings = await getSettings()
   // Read the per-request nonce injected by middleware. Next.js propagates this
   // nonce automatically to its own generated inline scripts when it sees 'x-nonce'.
   const nonce = (await headers()).get('x-nonce') ?? ''

@@ -9,12 +9,13 @@ import { RelatedProducts } from '@/components/product/RelatedProducts'
 export const dynamicParams = true
 
 export async function generateStaticParams() {
-  return getProducts().map((p) => ({ slug: p.slug }))
+  const products = await getProducts()
+  return products.map((p) => ({ slug: p.slug }))
 }
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  const allProducts = getProducts()
+  const allProducts = await getProducts()
   const product = allProducts.find((p) => p.slug === slug)
   if (!product) notFound()
 

@@ -11,12 +11,14 @@ export type Product = {
   id: string
   slug: string
   name: string
+  brand?: string
   price: number
   images: string[]
   category: Category
   scentFamily: ScentFamily[]
   tags: string[]
   sizes: string[]
+  sizePrices?: Record<string, number>
   shortDescription: string
   description: string
   scentNotes: ScentNotes
@@ -30,6 +32,7 @@ export type CartItem = {
   product: Product
   size: string
   quantity: number
+  price: number
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'delivered' | 'cancelled'

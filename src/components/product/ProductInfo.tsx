@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { Product } from '@/types'
-import { formatPrice } from '@/lib/utils'
+import { formatPrice, getSizePrice } from '@/lib/utils'
 import { useCart } from '@/context/CartContext'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -11,8 +11,9 @@ import { Accordion } from '@/components/ui/Accordion'
 
 export function ProductInfo({ product }: { product: Product }) {
   const { addItem, freeDeliveryThreshold } = useCart()
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0])
+  const [selectedSize, setSelectedSize] = useState(product.sizes[0] ?? '')
   const [quantity, setQuantity] = useState(1)
+  const selectedPrice = getSizePrice(product, selectedSize)
 
   const handleAddToCart = () => {
     addItem(product, selectedSize, quantity)
@@ -26,7 +27,7 @@ export function ProductInfo({ product }: { product: Product }) {
         <h1 className="font-serif font-light text-3xl md:text-4xl text-charcoal mb-2">
           {product.name}
         </h1>
-        <p className="font-serif text-2xl text-charcoal">{formatPrice(product.price)}</p>
+        <p className="font-serif text-2xl text-charcoal">{formatPrice(selectedPrice)}</p>
       </div>
 
       <div className="w-8 h-px bg-warm-gold" />

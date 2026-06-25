@@ -6,11 +6,13 @@ import { BrandStorySnippet } from '@/components/home/BrandStorySnippet'
 import { NewsletterSection } from '@/components/home/NewsletterSection'
 import { getProducts, getSettings } from '@/lib/server-data'
 
-export default function HomePage() {
-  const allProducts = getProducts()
-  const featured = allProducts.filter((p) => p.isFeatured).slice(0, 3)
-  const showcaseProducts = allProducts.slice(0, 4)
-  const settings = getSettings()
+export default async function HomePage() {
+  const [allProducts, settings] = await Promise.all([getProducts(), getSettings()])
+  const featuredProducts = allProducts.filter((p) => p.isFeatured)
+  // Fall back to newest products when no items are flagged yet
+  const sourcePool = featuredProducts.length > 0 ? featuredProducts : allProducts
+  const featured = sourcePool.slice(0, 3)
+  const showcaseProducts = sourcePool.slice(0, 4)
 
   return (
     <>

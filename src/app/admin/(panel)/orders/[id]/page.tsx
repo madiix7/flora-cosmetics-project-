@@ -19,7 +19,7 @@ export default function OrderDetailPage() {
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
-    fetch(`/api/orders/${id}`)
+    fetch(`/api/orders/${id}`, { cache: 'no-store' })
       .then((r) => {
         if (r.status === 401) { router.push('/admin/login'); return null }
         if (!r.ok) { setNotFound(true); return null }

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useReducer, useState, ReactNode } from 'react'
 import type { CartItem, Product } from '@/types'
-import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE } from '@/lib/utils'
+import { FREE_DELIVERY_THRESHOLD, DELIVERY_FEE, getSizePrice } from '@/lib/utils'
 
 type CartState = {
   items: CartItem[]
@@ -11,7 +11,7 @@ type CartState = {
 }
 
 type CartAction =
-  | { type: 'ADD_ITEM'; product: Product; size: string; quantity?: number }
+  | { type: 'ADD_ITEM'; product: Product; size: string; quantity?: number; price: number }
   | { type: 'REMOVE_ITEM'; productId: string; size: string }
   | { type: 'UPDATE_QUANTITY'; productId: string; size: string; quantity: number }
   | { type: 'CLEAR_CART' }
@@ -43,7 +43,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       }
       return {
         ...state,
-        items: [...state.items, { product: action.product, size: action.size, quantity: qty }],
+        items: [...state.items, { product: action.product, size: action.size, quantity: qty, price: action.price }],
       }
     }
     case 'REMOVE_ITEM':
@@ -106,7 +106,9 @@ type CartProviderProps = {
 
 type AnyObj = Record<string, unknown>
 
-function isValidCartItems(data: unknown): data is CartItem[] {
+type StoredCartItem = Omit<CartItem, 'price'> & { price?: number }
+
+function isValidCartItems(data: unknown): data is StoredCartItem[] {
   if (!Array.isArray(data)) return false
   return data.every((i) => {
     if (i === null || typeof i !== 'object') return false
@@ -142,7 +144,13 @@ export function CartProvider({
       try {
         const parsed: unknown = JSON.parse(stored)
         if (isValidCartItems(parsed)) {
-          dispatch({ type: 'LOAD_FROM_STORAGE', items: parsed })
+          const items: CartItem[] = parsed.map((i) => ({
+            ...i,
+            price: typeof i.price === 'number' && Number.isFinite(i.price)
+              ? i.price
+              : getSizePrice(i.product, i.size),
+          }))
+          dispatch({ type: 'LOAD_FROM_STORAGE', items })
         } else {
           localStorage.removeItem('flora_cart')
         }
@@ -171,7 +179,7 @@ export function CartProvider({
         freeDeliveryThreshold,
         deliveryFee,
         addItem: (product, size, quantity = 1) => {
-          dispatch({ type: 'ADD_ITEM', product, size, quantity })
+          dispatch({ type: 'ADD_ITEM', product, size, quantity, price: getSizePrice(product, size) })
           dispatch({ type: 'OPEN_DRAWER' })
         },
         removeItem: (productId, size) => dispatch({ type: 'REMOVE_ITEM', productId, size }),

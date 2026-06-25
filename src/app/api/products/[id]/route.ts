@@ -9,7 +9,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (auth) return auth
   const { id } = await params
 
-  const products = getProducts()
+  const products = await getProducts()
   const idx = products.findIndex((p) => p.id === id)
   if (idx === -1) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
@@ -21,7 +21,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 
   products[idx] = result.product
-  saveProducts(products)
+  await saveProducts(products)
   auditLog('product.updated', { id, name: result.product.name })
   return NextResponse.json(result.product)
 }
@@ -30,10 +30,10 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const auth = await requireAdmin(_req)
   if (auth) return auth
   const { id } = await params
-  const products = getProducts()
+  const products = await getProducts()
   const target = products.find((p) => p.id === id)
   if (!target) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  saveProducts(products.filter((p) => p.id !== id))
+  await saveProducts(products.filter((p) => p.id !== id))
   auditLog('product.deleted', { id, name: target.name })
   return NextResponse.json({ ok: true })
 }

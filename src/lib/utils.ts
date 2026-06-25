@@ -1,5 +1,9 @@
 import type { CartItem, Product } from '@/types'
 
+export function getSizePrice(product: Product, size: string): number {
+  return product.sizePrices?.[size] ?? product.price
+}
+
 export const FREE_DELIVERY_THRESHOLD = 200
 export const DELIVERY_FEE = 8
 
@@ -8,7 +12,7 @@ export function formatPrice(amount: number): string {
 }
 
 export function calculateTotal(items: CartItem[]): number {
-  return items.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+  return items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 }
 
 export function calculateDelivery(subtotal: number): number {

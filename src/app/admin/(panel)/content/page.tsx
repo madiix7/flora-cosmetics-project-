@@ -199,14 +199,17 @@ export default function ContentPage() {
             <div>
               <label className={labelClass}>Instagram URL</label>
               <input value={form.instagram ?? ''} onChange={(e) => set('instagram', e.target.value)} placeholder="https://instagram.com/floracosmetics" className={inputClass} />
+              <p className="text-[10px] text-stone/60 mt-1.5">Full URL or just the domain — e.g. instagram.com/yourpage</p>
             </div>
             <div>
               <label className={labelClass}>Facebook URL</label>
               <input value={form.facebook ?? ''} onChange={(e) => set('facebook', e.target.value)} placeholder="https://facebook.com/floracosmetics" className={inputClass} />
+              <p className="text-[10px] text-stone/60 mt-1.5">Full URL or just the domain — e.g. facebook.com/yourpage</p>
             </div>
             <div>
               <label className={labelClass}>TikTok URL</label>
               <input value={form.tiktok ?? ''} onChange={(e) => set('tiktok', e.target.value)} placeholder="https://tiktok.com/@floracosmetics" className={inputClass} />
+              <p className="text-[10px] text-stone/60 mt-1.5">Full URL or just the domain — e.g. tiktok.com/@yourpage</p>
             </div>
           </div>
         )}

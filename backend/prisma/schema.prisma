@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Master Catalog ───────────────────────────────────────────────────────────
+
+model Brand {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  normalized  String   @unique
+  country     String?
+  foundedYear Int?     @map("founded_year")
+  websiteUrl  String?  @map("website_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  aliases  BrandAlias[]
+  perfumes Perfume[]
+
+  @@map("brands")
+}
+
+model BrandAlias {
+  id         String @id @default(uuid())
+  brandId    String @map("brand_id")
+  alias      String
+  normalized String @unique
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@map("brand_aliases")
+}
+
+model FragranceFamily {
+  id         String @id @default(uuid())
+  name       String @unique
+  normalized String @unique
+
+  perfumeFamilies PerfumeFamily[]
+
+  @@map("fragrance_families")
+}
+
+model Note {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  normalized  String  @unique
+  canonicalId String? @map("canonical_id")
+
+  canonical    Note?         @relation("NoteVariants", fields: [canonicalId], references: [id])
+  variants     Note[]        @relation("NoteVariants")
+  perfumeNotes PerfumeNote[]
+
+  @@map("notes")
+}
+
+model Accord {
+  id         String @id @default(uuid())
+  name       String @unique
+  normalized String @unique
+
+  perfumeAccords PerfumeAccord[]
+
+  @@map("accords")
+}
+
+enum Concentration {
+  EDP
+  EDT
+  PARFUM
+  EDC
+  ELIXIR
+  OTHER
+}
+
+enum Gender {
+  MASCULINE
+  FEMININE
+  UNISEX
+}
+
+model Perfume {
+  id             String         @id @default(uuid())
+  brandId        String         @map("brand_id")
+  name           String
+  normalizedName String         @map("normalized_name")
+  concentration  Concentration?
+  gender         Gender?
+  releaseYear    Int?           @map("release_year")
+  description    String?
+  imageUrl       String?        @map("image_url")
+  externalId     String?        @map("external_id")
+  source         String?
+  isVerified     Boolean        @default(false) @map("is_verified")
+  slug           String         @unique
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  brand          Brand           @relation(fields: [brandId], references: [id])
+  aliases        PerfumeAlias[]
+  notes          PerfumeNote[]
+  accords        PerfumeAccord[]
+  families       PerfumeFamily[]
+  vendorProducts VendorProduct[]
+  enrichmentJobs EnrichmentJob[]
+
+  @@unique([brandId, normalizedName, concentration])
+  @@map("perfumes")
+}
+
+model PerfumeAlias {
+  id         String @id @default(uuid())
+  perfumeId  String @map("perfume_id")
+  alias      String
+  normalized String @unique
+
+  perfume Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
+
+  @@map("perfume_aliases")
+}
+
+enum NotePosition {
+  TOP
+  MIDDLE
+  BASE
+}
+
+model PerfumeNote {
+  perfumeId String       @map("perfume_id")
+  noteId    String       @map("note_id")
+  position  NotePosition
+
+  perfume Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
+  note    Note    @relation(fields: [noteId], references: [id])
+
+  @@id([perfumeId, noteId, position])
+  @@map("perfume_notes")
+}
+
+model PerfumeAccord {
+  perfumeId String   @map("perfume_id")
+  accordId  String   @map("accord_id")
+  strength  Decimal?
+
+  perfume Perfume @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
+  accord  Accord  @relation(fields: [accordId], references: [id])
+
+  @@id([perfumeId, accordId])
+  @@map("perfume_accords")
+}
+
+model PerfumeFamily {
+  perfumeId String  @map("perfume_id")
+  familyId  String  @map("family_id")
+  isPrimary Boolean @default(false) @map("is_primary")
+
+  perfume Perfume         @relation(fields: [perfumeId], references: [id], onDelete: Cascade)
+  family  FragranceFamily @relation(fields: [familyId], references: [id])
+
+  @@id([perfumeId, familyId])
+  @@map("perfume_families")
+}
+
+// ─── Vendor Catalog ───────────────────────────────────────────────────────────
+
+model Vendor {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  slug      String   @unique
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  products       VendorProduct[]
+  enrichmentJobs EnrichmentJob[]
+
+  @@map("vendors")
+}
+
+enum VendorProductStatus {
+  DRAFT
+  PENDING_ENRICHMENT
+  ACTIVE
+  INACTIVE
+}
+
+model VendorProduct {
+  id              String              @id @default(uuid())
+  vendorId        String              @map("vendor_id")
+  perfumeId       String?             @map("perfume_id")
+  customName      String?             @map("custom_name")
+  status          VendorProductStatus @default(DRAFT)
+  enrichmentJobId String?             @map("enrichment_job_id")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  vendor    Vendor            @relation(fields: [vendorId], references: [id])
+  perfume   Perfume?          @relation(fields: [perfumeId], references: [id])
+  inventory VendorInventory[]
+
+  @@unique([vendorId, perfumeId])
+  @@map("vendor_products")
+}
+
+model VendorInventory {
+  id              String  @id @default(uuid())
+  vendorProductId String  @map("vendor_product_id")
+  sizeMl          Int?    @map("size_ml")
+  sku             String?
+  price           Decimal
+  currency        String  @default("DZD")
+  stockQuantity   Int     @default(0) @map("stock_quantity")
+  isActive        Boolean @default(true) @map("is_active")
+
+  vendorProduct VendorProduct @relation(fields: [vendorProductId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorProductId, sizeMl])
+  @@map("vendor_inventory")
+}
+
+// ─── Enrichment & Audit ───────────────────────────────────────────────────────
+
+enum EnrichmentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  DEAD_LETTER
+}
+
+model EnrichmentJob {
+  id              String           @id @default(uuid())
+  idempotencyKey  String           @unique @map("idempotency_key")
+  query           String
+  normalizedQuery String           @map("normalized_query")
+  vendorId        String?          @map("vendor_id")
+  perfumeId       String?          @map("perfume_id")
+  status          EnrichmentStatus @default(PENDING)
+  attempts        Int              @default(0)
+  lastError       String?          @map("last_error")
+  rawData         Json?            @map("raw_data")
+  source          String?
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  completedAt     DateTime?        @map("completed_at")
+
+  vendor  Vendor?  @relation(fields: [vendorId], references: [id])
+  perfume Perfume? @relation(fields: [perfumeId], references: [id])
+
+  @@map("enrichment_jobs")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?  @map("actor_id")
+  actorType  String?  @map("actor_type")
+  action     String
+  targetType String?  @map("target_type")
+  targetId   String?  @map("target_id")
+  payload    Json?
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("audit_logs")
+}

@@ -1,9 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Product, Category, ScentFamily } from '@/types'
 import { ImageUploader } from '@/components/admin/ImageUploader'
+import { NotesPicker } from '@/components/admin/NotesPicker'
+
+type SizeEntry = { label: string; price: string }
 
 type Props = {
   initial?: Partial<Product>
@@ -32,21 +35,47 @@ export function ProductForm({ initial, mode, audienceTags, seasonTags }: Props) 
     id: initial?.id ?? String(Date.now()),
     slug: initial?.slug ?? '',
     name: initial?.name ?? '',
-    price: initial?.price ?? 0,
+    brand: initial?.brand ?? '',
     category: initial?.category ?? 'perfume' as Category,
     scentFamily: initial?.scentFamily ?? [] as ScentFamily[],
     tags: initial?.tags ?? [] as string[],
-    sizes: (initial?.sizes ?? ['30ml']).join(', '),
     images: initial?.images ?? [] as string[],
     shortDescription: initial?.shortDescription ?? '',
     description: initial?.description ?? '',
-    scentTop: (initial?.scentNotes?.top ?? []).join(', '),
-    scentHeart: (initial?.scentNotes?.heart ?? []).join(', '),
-    scentBase: (initial?.scentNotes?.base ?? []).join(', '),
+    scentTop: initial?.scentNotes?.top ?? [] as string[],
+    scentHeart: initial?.scentNotes?.heart ?? [] as string[],
+    scentBase: initial?.scentNotes?.base ?? [] as string[],
     isFeatured: initial?.isFeatured ?? false,
     isNew: initial?.isNew ?? false,
     isBestseller: initial?.isBestseller ?? false,
   })
+
+  const [sizeEntries, setSizeEntries] = useState<SizeEntry[]>(() => {
+    const sizes = (initial?.sizes ?? []).filter(Boolean)
+    return sizes.map((label) => ({
+      label,
+      price: String(initial?.sizePrices?.[label] ?? initial?.price ?? 0),
+    }))
+  })
+  const [sizeInput, setSizeInput] = useState('')
+  const sizeInputRef = useRef<HTMLInputElement>(null)
+
+  const addSizeFromInput = () => {
+    const trimmed = sizeInput.trim()
+    if (!trimmed) return
+    if (sizeEntries.some((e) => e.label.toLowerCase() === trimmed.toLowerCase())) {
+      setSizeInput('')
+      return
+    }
+    const defaultPrice = sizeEntries[0]?.price ?? '0'
+    setSizeEntries((s) => [...s, { label: trimmed, price: defaultPrice }])
+    setSizeInput('')
+    sizeInputRef.current?.focus()
+  }
+
+  const removeSizeEntry = (i: number) => setSizeEntries((s) => s.filter((_, idx) => idx !== i))
+  const updateSizePrice = (i: number, price: string) =>
+    setSizeEntries((s) => s.map((entry, idx) => idx === i ? { ...entry, price } : entry))
 
   const handleNameChange = (name: string) => {
     setForm((f) => ({ ...f, name, slug: mode === 'new' ? slugify(name) : f.slug }))
@@ -75,22 +104,33 @@ export function ProductForm({ initial, mode, audienceTags, seasonTags }: Props) 
     setSaving(true)
     setError('')
 
+    const validEntries = sizeEntries.filter((s) => s.label.trim())
+    const sizes = validEntries.map((s) => s.label.trim())
+    const sizePrices: Record<string, number> = {}
+    validEntries.forEach((s) => {
+      const p = Number(s.price)
+      if (!isNaN(p) && p >= 0) sizePrices[s.label.trim()] = Math.round(p)
+    })
+    const price = validEntries.length > 0 ? (Math.round(Number(validEntries[0].price)) || 0) : 0
+
     const product: Product = {
       id: form.id,
       slug: form.slug || slugify(form.name),
       name: form.name,
-      price: Number(form.price),
+      ...(form.brand.trim() ? { brand: form.brand.trim() } : {}),
+      price,
       category: form.category,
       scentFamily: form.scentFamily,
       tags: form.tags,
-      sizes: form.sizes.split(',').map((s) => s.trim()).filter(Boolean),
+      sizes,
+      ...(Object.keys(sizePrices).length > 0 ? { sizePrices } : {}),
       images: form.images,
       shortDescription: form.shortDescription,
       description: form.description,
       scentNotes: {
-        top: form.scentTop.split(',').map((s) => s.trim()).filter(Boolean),
-        heart: form.scentHeart.split(',').map((s) => s.trim()).filter(Boolean),
-        base: form.scentBase.split(',').map((s) => s.trim()).filter(Boolean),
+        top: form.scentTop,
+        heart: form.scentHeart,
+        base: form.scentBase,
       },
       isFeatured: form.isFeatured,
       isNew: form.isNew,
@@ -139,29 +179,88 @@ export function ProductForm({ initial, mode, audienceTags, seasonTags }: Props) 
             <input required value={form.name} onChange={(e) => handleNameChange(e.target.value)} placeholder="e.g. Oud Intense" className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Slug</label>
-            <input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="auto-generated" className={inputClass} />
+            <label className={labelClass}>Brand</label>
+            <input value={form.brand} onChange={(e) => setForm((f) => ({ ...f, brand: e.target.value }))} placeholder="e.g. Dior" className={inputClass} />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className={labelClass}>Price (DT) *</label>
-            <input required type="number" min={0} value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value) }))} className={inputClass} />
-          </div>
-          <div>
-            <label className={labelClass}>Category *</label>
-            <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as Category }))}
-              className="w-full bg-transparent border-b border-parchment focus:border-charcoal py-2 text-sm text-charcoal outline-none">
-              {CATEGORIES.map((c) => <option key={c} value={c}>{c.replace('-', ' ')}</option>)}
-            </select>
+            <label className={labelClass}>Slug</label>
+            <input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))} placeholder="auto-generated" className={inputClass} />
           </div>
         </div>
 
         <div>
-          <label className={labelClass}>Sizes (comma-separated)</label>
-          <input value={form.sizes} onChange={(e) => setForm((f) => ({ ...f, sizes: e.target.value }))} placeholder="30ml, 50ml, 100ml" className={inputClass} />
+          <label className={labelClass}>Category *</label>
+          <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value as Category }))}
+            className="w-full bg-transparent border-b border-parchment focus:border-charcoal py-2 text-sm text-charcoal outline-none">
+            {CATEGORIES.map((c) => <option key={c} value={c}>{c.replace('-', ' ')}</option>)}
+          </select>
         </div>
+
+        {/* Sizes — tag input */}
+        <div>
+          <label className={labelClass}>Sizes</label>
+          {sizeEntries.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {sizeEntries.map((entry, i) => (
+                <span
+                  key={i}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-charcoal text-ivory text-[10px] tracking-wide rounded-full"
+                >
+                  {entry.label}
+                  <button
+                    type="button"
+                    onClick={() => removeSizeEntry(i)}
+                    className="opacity-60 hover:opacity-100 transition-opacity leading-none"
+                    aria-label={`Remove ${entry.label}`}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          <input
+            ref={sizeInputRef}
+            value={sizeInput}
+            onChange={(e) => setSizeInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') { e.preventDefault(); addSizeFromInput() }
+            }}
+            placeholder={sizeEntries.length === 0 ? 'Type a size and press Enter — e.g. 100ml' : 'Add another size…'}
+            className={inputClass}
+          />
+          <p className="text-[9px] text-stone/40 mt-1">Press Enter to confirm each size.</p>
+        </div>
+
+        {/* Prices — one field per confirmed size */}
+        {sizeEntries.length > 0 && (
+          <div>
+            <label className={labelClass}>Prices</label>
+            <div className="space-y-3 mt-1">
+              {sizeEntries.map((entry, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <span className="text-xs text-charcoal w-20 shrink-0">{entry.label}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={entry.price}
+                    onChange={(e) => updateSizePrice(i, e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault() }}
+                    placeholder="0"
+                    className={`${inputClass} max-w-[160px]`}
+                  />
+                  <span className="text-[10px] text-stone shrink-0">DT</span>
+                  {i === 0 && (
+                    <span className="text-[9px] text-stone/40 shrink-0">default</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div>
           <label className={labelClass}>Short Description</label>
@@ -230,38 +329,44 @@ export function ProductForm({ initial, mode, audienceTags, seasonTags }: Props) 
         </div>
       )}
 
-      {/* Scent */}
-      <div className="bg-ivory rounded border border-parchment p-6 space-y-5">
-        <p className="text-[10px] tracking-widest uppercase text-charcoal mb-2">Scent Profile</p>
+      {/* Scent — perfumes only */}
+      {form.category === 'perfume' && (
+        <div className="bg-ivory rounded border border-parchment p-6 space-y-5">
+          <p className="text-[10px] tracking-widest uppercase text-charcoal mb-2">Scent Profile</p>
 
-        <div>
-          <label className={labelClass}>Scent Families</label>
-          <div className="flex gap-2 flex-wrap mt-1">
-            {SCENT_FAMILIES.map((f) => (
-              <button key={f} type="button" onClick={() => toggleScent(f)}
-                className={`px-3 py-1.5 text-[10px] tracking-widest uppercase rounded transition-colors ${
-                  form.scentFamily.includes(f) ? 'bg-charcoal text-ivory' : 'border border-parchment text-stone hover:border-charcoal'
-                }`}>
-                {f}
-              </button>
-            ))}
+          <div>
+            <label className={labelClass}>Scent Families</label>
+            <div className="flex gap-2 flex-wrap mt-1">
+              {SCENT_FAMILIES.map((f) => (
+                <button key={f} type="button" onClick={() => toggleScent(f)}
+                  className={`px-3 py-1.5 text-[10px] tracking-widest uppercase rounded transition-colors ${
+                    form.scentFamily.includes(f) ? 'bg-charcoal text-ivory' : 'border border-parchment text-stone hover:border-charcoal'
+                  }`}>
+                  {f}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-1">
+            <NotesPicker
+              label="Top Notes"
+              selected={form.scentTop}
+              onChange={(notes) => setForm((f) => ({ ...f, scentTop: notes }))}
+            />
+            <NotesPicker
+              label="Heart Notes"
+              selected={form.scentHeart}
+              onChange={(notes) => setForm((f) => ({ ...f, scentHeart: notes }))}
+            />
+            <NotesPicker
+              label="Base Notes"
+              selected={form.scentBase}
+              onChange={(notes) => setForm((f) => ({ ...f, scentBase: notes }))}
+            />
           </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {[
-            { label: 'Top Notes', field: 'scentTop' as const },
-            { label: 'Heart Notes', field: 'scentHeart' as const },
-            { label: 'Base Notes', field: 'scentBase' as const },
-          ].map(({ label, field }) => (
-            <div key={field}>
-              <label className={labelClass}>{label}</label>
-              <input value={form[field]} onChange={(e) => setForm((f) => ({ ...f, [field]: e.target.value }))}
-                placeholder="Rose, Jasmine" className={inputClass} />
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Flags */}
       <div className="bg-ivory rounded border border-parchment p-6">

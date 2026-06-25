@@ -18,10 +18,12 @@ const STATUS_BAR: Record<string, string> = {
   cancelled: 'bg-red-400',
 }
 
-export default function DashboardPage() {
-  const orders = getOrders()
-  const products = getProducts()
-  const settings = getSettings()
+export default async function DashboardPage() {
+  const [orders, products, settings] = await Promise.all([
+    getOrders(),
+    getProducts(),
+    getSettings(),
+  ])
 
   const activeOrders = orders.filter((o) => o.status !== 'cancelled')
   const totalRevenue = activeOrders.reduce((sum, o) => sum + o.total, 0)
